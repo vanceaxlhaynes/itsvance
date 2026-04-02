@@ -530,60 +530,137 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
 <script>
 (function(){
   'use strict';
-  var ready=false;
+  var ready = false;
 
-  document.getElementById('togBtn').addEventListener('click',function(){
-    var h=document.documentElement,l=document.getElementById('togLabel');
-    if(h.getAttribute('data-theme')==='dark'){h.setAttribute('data-theme','light');l.textContent='dark';}
-    else{h.setAttribute('data-theme','dark');l.textContent='light';}
+  // Theme Toggle [cite: 491-495]
+  document.getElementById('togBtn').addEventListener('click', function(){
+    var h = document.documentElement, l = document.getElementById('togLabel');
+    if(h.getAttribute('data-theme') === 'dark'){
+      h.setAttribute('data-theme', 'light');
+      l.textContent = 'dark';
+    } else {
+      h.setAttribute('data-theme', 'dark');
+      l.textContent = 'light';
+    }
   });
 
-  document.getElementById('enterBtn').addEventListener('click',function(){
+  // Screen Transition [cite: 496-501]
+  document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
     document.getElementById('main').classList.add('animate');
-    setTimeout(function(){ready=true;},700);
+    setTimeout(function(){ ready = true; }, 700);
   });
 
-  function openOv(id){if(!ready)return;document.getElementById('ov-'+id).classList.add('open');}
-  function closeOv(id){document.getElementById('ov-'+id).classList.remove('open');}
+  // Overlay Controls [cite: 502-503]
+  function openOv(id){ if(!ready) return; document.getElementById('ov-' + id).classList.add('open'); }
+  function closeOv(id){ document.getElementById('ov-' + id).classList.remove('open'); }
 
-  var dragEl=null,offX=0,offY=0,sX=0,sY=0,moved=false;
-  function xy(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
-  function down(e){if(!ready)return;dragEl=e.currentTarget;var r=dragEl.getBoundingClientRect(),p=xy(e);offX=p.x-r.left;offY=p.y-r.top;sX=p.x;sY=p.y;moved=false;dragEl.classList.add('dragging');e.preventDefault();}
-  function move(e){if(!dragEl)return;var p=xy(e);if(Math.abs(p.x-sX)>5||Math.abs(p.y-sY)>5)moved=true;dragEl.style.left=(p.x-offX)+'px';dragEl.style.top=(p.y-offY)+'px';e.preventDefault();}
-  function up(){if(!dragEl)return;dragEl.classList.remove('dragging');if(!moved&&ready){var t=dragEl.dataset.click;if(t)openOv(t);}dragEl=null;}
-  document.addEventListener('mousemove',move);
-  document.addEventListener('mouseup',up);
-  document.addEventListener('touchmove',move,{passive:false});
-  document.addEventListener('touchend',up);
-  document.querySelectorAll('.draggable').forEach(function(el){el.addEventListener('mousedown',down);el.addEventListener('touchstart',down,{passive:false});});
+  // Draggable Logic [cite: 504-513]
+  var dragEl = null, offX = 0, offY = 0, sX = 0, sY = 0, moved = false;
+  function xy(e){ return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
+  
+  function down(e){ 
+    if(!ready) return; 
+    dragEl = e.currentTarget; 
+    var r = dragEl.getBoundingClientRect(), p = xy(e); 
+    offX = p.x - r.left; offY = p.y - r.top; sX = p.x; sY = p.y; moved = false; 
+    dragEl.classList.add('dragging'); 
+    e.preventDefault(); 
+  }
+  
+  function move(e){ 
+    if(!dragEl) return; 
+    var p = xy(e); 
+    if(Math.abs(p.x - sX) > 5 || Math.abs(p.y - sY) > 5) moved = true; 
+    dragEl.style.left = (p.x - offX) + 'px'; 
+    dragEl.style.top = (p.y - offY) + 'px'; 
+    e.preventDefault(); 
+  }
+  
+  function up(){ 
+    if(!dragEl) return; 
+    dragEl.classList.remove('dragging'); 
+    if(!moved && ready){ 
+      var t = dragEl.dataset.click; 
+      if(t) openOv(t); 
+    } 
+    dragEl = null; 
+  }
+  
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+  document.addEventListener('touchmove', move, {passive:false});
+  document.addEventListener('touchend', up);
+  document.querySelectorAll('.draggable').forEach(function(el){
+    el.addEventListener('mousedown', down);
+    el.addEventListener('touchstart', down, {passive:false});
+  });
 
-  var ci=0,csl=document.querySelectorAll('.cs'),cdo=document.querySelectorAll('.c-dot');
-  var caps=['latest — writings','latest — movie of the week','latest — on repeat','latest — birthday'];
-  function cUpd(){csl.forEach(function(s){s.classList.remove('active');});cdo.forEach(function(d){d.classList.remove('active');});csl[ci].classList.add('active');cdo[ci].classList.add('active');document.getElementById('capText').textContent=caps[ci];}
-  document.getElementById('cNextBtn').addEventListener('click',function(e){e.stopPropagation();ci=(ci+1)%csl.length;cUpd();});
-  document.getElementById('cPrevBtn').addEventListener('click',function(e){e.stopPropagation();ci=(ci-1+csl.length)%csl.length;cUpd();});
+  // Polaroid Carousel (Center Main) [cite: 514-518]
+  var ci = 0, csl = document.querySelectorAll('.cs'), cdo = document.querySelectorAll('.c-dot');
+  var caps = ['latest — writings', 'latest — movie of the week', 'latest — on repeat', 'latest — birthday'];
+  
+  function cUpd(){ 
+    csl.forEach(function(s){ s.classList.remove('active'); }); 
+    cdo.forEach(function(d){ d.classList.remove('active'); }); 
+    csl[ci].classList.add('active'); 
+    cdo[ci].classList.add('active'); 
+    document.getElementById('capText').textContent = caps[ci]; 
+  }
+  
+  document.getElementById('cNextBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci + 1) % csl.length; cUpd(); });
+  document.getElementById('cPrevBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci - 1 + csl.length) % csl.length; cUpd(); });
 
-  var wsl=document.querySelectorAll('.ws'),wi=0;
-  function wUpd(){wsl.forEach(function(s){s.classList.remove('active');});wsl[wi].classList.add('active');document.getElementById('wDate').textContent=wsl[wi].dataset.wd;}
-  document.getElementById('wNext').addEventListener('click',function(){if(wi<wsl.length-1){wi++;wUpd();}});
-  document.getElementById('wPrev').addEventListener('click',function(){if(wi>0){wi--;wUpd();}else{closeOv('writings');wi=0;wUpd();}});
+  // FIXED: WRITINGS Navigation 
+  var wsl = document.querySelectorAll('.ws'), wi = 0;
+  function wUpd(){ 
+    wsl.forEach(function(s){ s.classList.remove('active'); }); 
+    wsl[wi].classList.add('active'); 
+    document.getElementById('wDate').textContent = wsl[wi].dataset.wd; 
+  }
+  
+  document.getElementById('wNext').addEventListener('click', function(){ 
+    wi = (wi + 1) % wsl.length; 
+    wUpd(); 
+  });
+  
+  document.getElementById('wPrev').addEventListener('click', function(){ 
+    wi = (wi - 1 + wsl.length) % wsl.length; 
+    wUpd(); 
+  });
 
-  var bsl=document.querySelectorAll('.bs'),bi=0;
-  function bUpd(){bsl.forEach(function(s){s.classList.remove('active');});bsl[bi].classList.add('active');document.getElementById('bCount').textContent=(bi+1)+' / '+bsl.length;}
-  document.getElementById('bCloseBtn').addEventListener('click',function(){closeOv('birthday');});
-  document.getElementById('bPrevBtn').addEventListener('click',function(){bi=(bi-1+bsl.length)%bsl.length;bUpd();});
-  document.getElementById('bNextBtn').addEventListener('click',function(){bi=(bi+1)%bsl.length;bUpd();});
+  // BIRTHDAY Navigation [cite: 523-527]
+  var bsl = document.querySelectorAll('.bs'), bi = 0;
+  function bUpd(){ 
+    bsl.forEach(function(s){ s.classList.remove('active'); }); 
+    bsl[bi].classList.add('active'); 
+    document.getElementById('bCount').textContent = (bi + 1) + ' / ' + bsl.length; 
+  }
+  document.getElementById('bCloseBtn').addEventListener('click', function(){ closeOv('birthday'); });
+  document.getElementById('bPrevBtn').addEventListener('click', function(){ bi = (bi - 1 + bsl.length) % bsl.length; bUpd(); });
+  document.getElementById('bNextBtn').addEventListener('click', function(){ bi = (bi + 1) % bsl.length; bUpd(); });
 
-  function mmSlide(id,d){var el=document.getElementById(id),sl=el.querySelectorAll('.mms'),cur=0;sl.forEach(function(s,i){if(s.classList.contains('active'))cur=i;});sl[cur].classList.remove('active');var n=(cur+d+sl.length)%sl.length;sl[n].classList.add('active');document.getElementById(id+'-c').textContent=(n+1)+' / '+sl.length;}
-  document.getElementById('mmCloseBtn').addEventListener('click',function(){closeOv('moviemusic');});
-  document.getElementById('mvPrev').addEventListener('click',function(){mmSlide('mvShow',-1);});
-  document.getElementById('mvNext').addEventListener('click',function(){mmSlide('mvShow',1);});
-  document.getElementById('muPrev').addEventListener('click',function(){mmSlide('muShow',-1);});
-  document.getElementById('muNext').addEventListener('click',function(){mmSlide('muShow',1);});
+  // MOVIE & MUSIC Navigation [cite: 528-533]
+  function mmSlide(id, d){
+    var el = document.getElementById(id), sl = el.querySelectorAll('.mms'), cur = 0;
+    sl.forEach(function(s, i){ if(s.classList.contains('active')) cur = i; });
+    sl[cur].classList.remove('active');
+    var n = (cur + d + sl.length) % sl.length;
+    sl[n].classList.add('active');
+    document.getElementById(id + '-c').textContent = (n + 1) + ' / ' + sl.length;
+  }
+  document.getElementById('mmCloseBtn').addEventListener('click', function(){ closeOv('moviemusic'); });
+  document.getElementById('mvPrev').addEventListener('click', function(){ mmSlide('mvShow', -1); });
+  document.getElementById('mvNext').addEventListener('click', function(){ mmSlide('mvShow', 1); });
+  document.getElementById('muPrev').addEventListener('click', function(){ mmSlide('muShow', -1); });
+  document.getElementById('muNext').addEventListener('click', function(){ mmSlide('muShow', 1); });
 
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.ov.open').forEach(function(f){f.classList.remove('open');});});
+  // Global Escape Key Listener [cite: 534]
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') document.querySelectorAll('.ov.open').forEach(function(f){ f.classList.remove('open'); });
+  });
+
 })();
 </script>
 </body>
