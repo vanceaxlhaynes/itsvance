@@ -206,16 +206,34 @@
     .ov-btn:hover { color: var(--text); }
 
     /* WRITINGS */
-    .w-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-    .w-date { font-size: 0.75rem; color: var(--text-dim); }
-    .ws { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 3.5rem 2rem 3rem; }
-    .ws.active { display: block; animation: fadeIn 0.3s ease both; }
-    .ws-inner { max-width: 520px; margin: 0 auto; }
-    .ws-type { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 1.5rem; }
-    .ws-body { font-size: 0.85rem; line-height: 2.1; white-space: pre-line; }
-    .stanza { margin-bottom: 1rem; }
-    .ws-img { width: 240px; margin: 2rem 0; border: 1px solid var(--img-border); }
-    .ws-sign { margin-top: 2.5rem; font-size: 0.72rem; color: var(--text-muted); }
+.w-bar { 
+  position: absolute; top: 0; left: 0; right: 0; 
+  padding: 1rem 1.5rem; display: flex; justify-content: center; 
+  align-items: center; z-index: 10; 
+}
+.w-date { font-size: 0.75rem; color: var(--text-dim); }
+
+/* Markup Positions */
+.w-nav-side {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  z-index: 3000; font-size: 0.85rem; letter-spacing: 0.05em;
+}
+#wPrev { left: 2rem; }
+#wNext { right: 2rem; }
+
+.w-close-btn {
+  position: fixed; top: 1rem; left: 1.2rem;
+  z-index: 3000; font-size: 0.85rem; letter-spacing: 0.05em;
+}
+
+.ws { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 6rem 2rem 3rem; }
+.ws.active { display: block; animation: fadeIn 0.3s ease both; }
+.ws-inner { max-width: 520px; margin: 0 auto; }
+.ws-type { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 1.5rem; }
+.ws-body { font-size: 0.85rem; line-height: 2.1; white-space: pre-line; }
+.stanza { margin-bottom: 1rem; }
+.ws-img { width: 240px; margin: 2rem 0; border: 1px solid var(--img-border); }
+.ws-sign { margin-top: 2.5rem; font-size: 0.72rem; color: var(--text-muted); }
 
     /* BIRTHDAY */
     .b-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; z-index: 10; }
@@ -356,7 +374,15 @@ the moon rises.”
 
 <!-- WRITINGS -->
 <div id="ov-writings" class="ov w-ov">
-  <div class="w-bar"><button class="ov-btn" id="wPrev">←</button><span class="w-date" id="wDate">march 2026</span><button class="ov-btn" id="wNext">→</button></div>
+  <div class="w-bar">
+    <span class="w-date" id="wDate">march 2026</span>
+  </div>
+
+  <button class="ov-btn w-close-btn" onclick="closeOv('writings')">← close</button>
+
+  <button class="ov-btn w-nav-side" id="wPrev">← prev</button>
+  <button class="ov-btn w-nav-side" id="wNext">next →</button>
+
   <div class="ws active" data-wd="march 2026"><div class="ws-inner"><div class="ws-type">poetry</div><div class="ws-body"><div class="stanza">Beauty Begins Where the Sun Sets
 
 “Why do you keep on chasing the sunset?” she asked, completely baffled by the fact that he always felt the need to pursue and catch this heavenly body every time they went out.
@@ -532,7 +558,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   'use strict';
   var ready = false;
 
-  // Theme Toggle Logic [cite: 491-495]
+  // Theme Toggle [cite: 491-495]
   document.getElementById('togBtn').addEventListener('click', function(){
     var h = document.documentElement, l = document.getElementById('togLabel');
     if(h.getAttribute('data-theme') === 'dark'){
@@ -544,7 +570,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     }
   });
 
-  // Screen Transition Logic [cite: 496-501]
+  // Screen Transition [cite: 496-501]
   document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
@@ -612,7 +638,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('cNextBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci + 1) % csl.length; cUpd(); });
   document.getElementById('cPrevBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci - 1 + csl.length) % csl.length; cUpd(); });
 
-  // UPDATED: WRITINGS Navigation Logic 
+  // WRITINGS NAVIGATION (Looping Logic)
   var wsl = document.querySelectorAll('.ws'), wi = 0;
   function wUpd(){ 
     wsl.forEach(function(s){ s.classList.remove('active'); }); 
@@ -621,12 +647,12 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   }
   
   document.getElementById('wNext').addEventListener('click', function(){ 
-    wi = (wi + 1) % wsl.length; // Fixed: Loops back to first poem [cite: 521]
+    wi = (wi + 1) % wsl.length; 
     wUpd(); 
   });
   
   document.getElementById('wPrev').addEventListener('click', function(){ 
-    wi = (wi - 1 + wsl.length) % wsl.length; // Fixed: Loops to last poem [cite: 522]
+    wi = (wi - 1 + wsl.length) % wsl.length; 
     wUpd(); 
   });
 
