@@ -207,9 +207,23 @@
 
     /* WRITINGS */
 .w-bar { 
-  position: absolute; top: 0; left: 0; right: 0; 
-  padding: 1.5rem; display: flex; justify-content: center; 
-  align-items: center; z-index: 10; 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  padding: 1.2rem 1.5rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  z-index: 10; 
+}
+
+.w-date { 
+  font-size: 0.75rem; 
+  color: var(--text-dim); 
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%); 
 }
 
 /* Side Navigation - Same size as global buttons */
@@ -371,10 +385,11 @@ the moon rises.”
 
 <!-- WRITINGS -->
 <div id="ov-writings" class="ov w-ov">
-  <div class="w-bar">
-    <button class="ov-btn w-close-btn" id="wCloseBtn">← close</button>
-    <span class="w-date" id="wDate">march 2026</span>
-  </div>
+ <div class="w-bar">
+  <button class="ov-btn" id="wCloseBtn" onclick="closeOv('writings')">← close</button>
+  <span class="w-date" id="wDate">march 2026</span>
+  <span class="ov-btn" style="cursor:default; opacity:0; pointer-events:none;">← close</span>
+</div>
 
   <button class="ov-btn w-nav-side" id="wPrev">← prev</button>
   <button class="ov-btn w-nav-side" id="wNext">next →</button>
@@ -602,8 +617,15 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   }
   
   document.getElementById('wNext').addEventListener('click', function(){ wi = (wi + 1) % wsl.length; wUpd(); });
-  document.getElementById('wPrev').addEventListener('click', function(){ wi = (wi - 1 + wsl.length) % wsl.length; wUpd(); });
-  document.getElementById('wCloseBtn').addEventListener('click', function(){ closeOv('writings'); });
+  document.getElementById('wPrev').addEventListener('click', function(){
+  wi = (wi - 1 + wsl.length) % wsl.length; // Enables infinite looping
+  wUpd();
+});
+
+// Explicitly link the new close button ID
+document.getElementById('wCloseBtn').addEventListener('click', function(){ 
+  closeOv('writings'); 
+});
 
   // BIRTHDAY & MOVIES (Same format)
   var bsl = document.querySelectorAll('.bs'), bi = 0;
