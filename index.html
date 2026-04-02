@@ -558,7 +558,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   'use strict';
   var ready = false;
 
-  // Theme Toggle [cite: 491-495]
+  // Theme Toggle [cite: 1029-1033]
   document.getElementById('togBtn').addEventListener('click', function(){
     var h = document.documentElement, l = document.getElementById('togLabel');
     if(h.getAttribute('data-theme') === 'dark'){
@@ -570,7 +570,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     }
   });
 
-  // Screen Transition [cite: 496-501]
+  // Screen Transition [cite: 1034-1039]
   document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
@@ -578,11 +578,11 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     setTimeout(function(){ ready = true; }, 700);
   });
 
-  // Overlay Controls [cite: 502-503]
+  // Overlay Controls [cite: 1040-1041]
   function openOv(id){ if(!ready) return; document.getElementById('ov-' + id).classList.add('open'); }
   function closeOv(id){ document.getElementById('ov-' + id).classList.remove('open'); }
 
-  // Draggable Logic [cite: 504-513]
+  // Draggable Logic [cite: 1042-1051]
   var dragEl = null, offX = 0, offY = 0, sX = 0, sY = 0, moved = false;
   function xy(e){ return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
   
@@ -623,7 +623,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     el.addEventListener('touchstart', down, {passive:false});
   });
 
-  // Polaroid Carousel (Center Main) [cite: 514-518]
+  // Polaroid Carousel (Center Main) [cite: 1052-1056]
   var ci = 0, csl = document.querySelectorAll('.cs'), cdo = document.querySelectorAll('.c-dot');
   var caps = ['latest — writings', 'latest — movie of the week', 'latest — on repeat', 'latest — birthday'];
   
@@ -638,7 +638,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('cNextBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci + 1) % csl.length; cUpd(); });
   document.getElementById('cPrevBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci - 1 + csl.length) % csl.length; cUpd(); });
 
-  // WRITINGS NAVIGATION (Looping Logic)
+  // WRITINGS NAVIGATION
   var wsl = document.querySelectorAll('.ws'), wi = 0;
   function wUpd(){ 
     wsl.forEach(function(s){ s.classList.remove('active'); }); 
@@ -656,7 +656,15 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     wUpd(); 
   });
 
-  // BIRTHDAY Navigation [cite: 523-527]
+  // WRITINGS CLOSE (Ensure this matches your HTML button class or ID)
+  // If you used the HTML from the previous turn: <button class="ov-btn w-close-btn" onclick="closeOv('writings')">
+  // The inline 'onclick' will work, but you can also add a listener here for extra safety:
+  var wClose = document.querySelector('.w-close-btn');
+  if(wClose) {
+    wClose.addEventListener('click', function(){ closeOv('writings'); });
+  }
+
+  // BIRTHDAY Navigation [cite: 1061-1065]
   var bsl = document.querySelectorAll('.bs'), bi = 0;
   function bUpd(){ 
     bsl.forEach(function(s){ s.classList.remove('active'); }); 
@@ -667,7 +675,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('bPrevBtn').addEventListener('click', function(){ bi = (bi - 1 + bsl.length) % bsl.length; bUpd(); });
   document.getElementById('bNextBtn').addEventListener('click', function(){ bi = (bi + 1) % bsl.length; bUpd(); });
 
-  // MOVIE & MUSIC Navigation [cite: 528-533]
+  // MOVIE & MUSIC Navigation [cite: 1066-1071]
   function mmSlide(id, d){
     var el = document.getElementById(id), sl = el.querySelectorAll('.mms'), cur = 0;
     sl.forEach(function(s, i){ if(s.classList.contains('active')) cur = i; });
@@ -682,7 +690,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('muPrev').addEventListener('click', function(){ mmSlide('muShow', -1); });
   document.getElementById('muNext').addEventListener('click', function(){ mmSlide('muShow', 1); });
 
-  // Global Escape Key Listener [cite: 534]
+  // Global Escape Key Listener [cite: 1072]
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape') document.querySelectorAll('.ov.open').forEach(function(f){ f.classList.remove('open'); });
   });
