@@ -208,29 +208,32 @@
     /* WRITINGS */
 .w-bar { 
   position: absolute; top: 0; left: 0; right: 0; 
-  padding: 1.5rem; display: flex; justify-content: center; 
+  padding: 1rem 1.5rem; display: flex; justify-content: center; 
   align-items: center; z-index: 10; 
 }
+.w-date { font-size: 0.75rem; color: var(--text-dim); }
 
-/* Side Navigation - Same size as global buttons */
+/* Markup Positions */
 .w-nav-side {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3000;
-  /* Removed custom font-size to match .ov-btn */
+  position: fixed; top: 50%; transform: translateY(-50%);
+  z-index: 3000; font-size: 0.85rem; letter-spacing: 0.05em;
 }
+#wPrev { left: 2rem; }
+#wNext { right: 2rem; }
 
-#wPrev { left: 1.5rem; }
-#wNext { right: 1.5rem; }
-
-/* Close Button - Positioned exactly like Birthday/Movies */
 .w-close-btn {
-  position: absolute; /* Changed to absolute to sit inside w-bar */
-  top: 1.5rem;
-  left: 1.5rem;
-  z-index: 3000;
+  position: fixed; top: 1rem; left: 1.2rem;
+  z-index: 3000; font-size: 0.85rem; letter-spacing: 0.05em;
 }
+
+.ws { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 6rem 2rem 3rem; }
+.ws.active { display: block; animation: fadeIn 0.3s ease both; }
+.ws-inner { max-width: 520px; margin: 0 auto; }
+.ws-type { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 1.5rem; }
+.ws-body { font-size: 0.85rem; line-height: 2.1; white-space: pre-line; }
+.stanza { margin-bottom: 1rem; }
+.ws-img { width: 240px; margin: 2rem 0; border: 1px solid var(--img-border); }
+.ws-sign { margin-top: 2.5rem; font-size: 0.72rem; color: var(--text-muted); }
 
     /* BIRTHDAY */
     .b-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; z-index: 10; }
@@ -372,9 +375,9 @@ the moon rises.”
 <!-- WRITINGS -->
 <div id="ov-writings" class="ov w-ov">
   <div class="w-bar">
-    <button class="ov-btn w-close-btn" id="wCloseBtn">← close</button>
+    <button class="ov-btn" id="wCloseBtn" onclick="closeOv('writings')">← close</button>
     <span class="w-date" id="wDate">march 2026</span>
-  </div>
+    <span class="ov-btn" style="cursor:default; opacity:0;">← close</span> </div>
 
   <button class="ov-btn w-nav-side" id="wPrev">← prev</button>
   <button class="ov-btn w-nav-side" id="wNext">next →</button>
@@ -558,13 +561,19 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   'use strict';
   var ready = false;
 
-  // Theme, Transition, and Overlay Core
+  // Theme Toggle [cite: 491-495]
   document.getElementById('togBtn').addEventListener('click', function(){
     var h = document.documentElement, l = document.getElementById('togLabel');
-    if(h.getAttribute('data-theme') === 'dark'){ h.setAttribute('data-theme', 'light'); l.textContent = 'dark'; } 
-    else { h.setAttribute('data-theme', 'dark'); l.textContent = 'light'; }
+    if(h.getAttribute('data-theme') === 'dark'){
+      h.setAttribute('data-theme', 'light');
+      l.textContent = 'dark';
+    } else {
+      h.setAttribute('data-theme', 'dark');
+      l.textContent = 'light';
+    }
   });
 
+  // Screen Transition [cite: 496-501]
   document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
@@ -572,28 +581,67 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     setTimeout(function(){ ready = true; }, 700);
   });
 
-  function openOv(id){ if(!ready) return; document.getElementById('ov-' + id).classList.add('open'); }
-  function closeOv(id){ document.getElementById('ov-' + id).classList.remove('open'); }
+  // Global Overlay Controls [cite: 502-503]
+  window.openOv = function(id){ if(!ready) return; document.getElementById('ov-' + id).classList.add('open'); };
+  window.closeOv = function(id){ document.getElementById('ov-' + id).classList.remove('open'); };
 
-  // Draggable Logic
+  // Draggable Logic [cite: 504-513]
   var dragEl = null, offX = 0, offY = 0, sX = 0, sY = 0, moved = false;
   function xy(e){ return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
-  function down(e){ if(!ready) return; dragEl = e.currentTarget; var r = dragEl.getBoundingClientRect(), p = xy(e); offX = p.x - r.left; offY = p.y - r.top; sX = p.x; sY = p.y; moved = false; dragEl.classList.add('dragging'); e.preventDefault(); }
-  function move(e){ if(!dragEl) return; var p = xy(e); if(Math.abs(p.x - sX) > 5 || Math.abs(p.y - sY) > 5) moved = true; dragEl.style.left = (p.x - offX) + 'px'; dragEl.style.top = (p.y - offY) + 'px'; e.preventDefault(); }
-  function up(){ if(!dragEl) return; dragEl.classList.remove('dragging'); if(!moved && ready){ var t = dragEl.dataset.click; if(t) openOv(t); } dragEl = null; }
   
-  document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
-  document.addEventListener('touchmove', move, {passive:false}); document.addEventListener('touchend', up);
-  document.querySelectorAll('.draggable').forEach(function(el){ el.addEventListener('mousedown', down); el.addEventListener('touchstart', down, {passive:false}); });
+  function down(e){ 
+    if(!ready) return; 
+    dragEl = e.currentTarget; 
+    var r = dragEl.getBoundingClientRect(), p = xy(e); 
+    offX = p.x - r.left; offY = p.y - r.top; sX = p.x; sY = p.y; moved = false; 
+    dragEl.classList.add('dragging'); 
+    e.preventDefault(); 
+  }
+  
+  function move(e){ 
+    if(!dragEl) return; 
+    var p = xy(e); 
+    if(Math.abs(p.x - sX) > 5 || Math.abs(p.y - sY) > 5) moved = true; 
+    dragEl.style.left = (p.x - offX) + 'px'; 
+    dragEl.style.top = (p.y - offY) + 'px'; 
+    e.preventDefault(); 
+  }
+  
+  function up(){ 
+    if(!dragEl) return; 
+    dragEl.classList.remove('dragging'); 
+    if(!moved && ready){ 
+      var t = dragEl.dataset.click; 
+      if(t) openOv(t); 
+    } 
+    dragEl = null; 
+  }
+  
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+  document.addEventListener('touchmove', move, {passive:false});
+  document.addEventListener('touchend', up);
+  document.querySelectorAll('.draggable').forEach(function(el){
+    el.addEventListener('mousedown', down);
+    el.addEventListener('touchstart', down, {passive:false});
+  });
 
-  // Carousel Logic
+  // Polaroid Carousel (Center Main) [cite: 514-518]
   var ci = 0, csl = document.querySelectorAll('.cs'), cdo = document.querySelectorAll('.c-dot');
   var caps = ['latest — writings', 'latest — movie of the week', 'latest — on repeat', 'latest — birthday'];
-  function cUpd(){ csl.forEach(function(s){ s.classList.remove('active'); }); cdo.forEach(function(d){ d.classList.remove('active'); }); csl[ci].classList.add('active'); cdo[ci].classList.add('active'); document.getElementById('capText').textContent = caps[ci]; }
+  
+  function cUpd(){ 
+    csl.forEach(function(s){ s.classList.remove('active'); }); 
+    cdo.forEach(function(d){ d.classList.remove('active'); }); 
+    csl[ci].classList.add('active'); 
+    cdo[ci].classList.add('active'); 
+    document.getElementById('capText').textContent = caps[ci]; 
+  }
+  
   document.getElementById('cNextBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci + 1) % csl.length; cUpd(); });
   document.getElementById('cPrevBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci - 1 + csl.length) % csl.length; cUpd(); });
 
-  // WRITINGS NAVIGATION
+  // WRITINGS Navigation & Close
   var wsl = document.querySelectorAll('.ws'), wi = 0;
   function wUpd(){ 
     wsl.forEach(function(s){ s.classList.remove('active'); }); 
@@ -601,17 +649,32 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     document.getElementById('wDate').textContent = wsl[wi].dataset.wd; 
   }
   
-  document.getElementById('wNext').addEventListener('click', function(){ wi = (wi + 1) % wsl.length; wUpd(); });
-  document.getElementById('wPrev').addEventListener('click', function(){ wi = (wi - 1 + wsl.length) % wsl.length; wUpd(); });
-  document.getElementById('wCloseBtn').addEventListener('click', function(){ closeOv('writings'); });
+  document.getElementById('wNext').addEventListener('click', function(){ 
+    wi = (wi + 1) % wsl.length; 
+    wUpd(); 
+  });
+  
+  document.getElementById('wPrev').addEventListener('click', function(){ 
+    wi = (wi - 1 + wsl.length) % wsl.length; 
+    wUpd(); 
+  });
 
-  // BIRTHDAY & MOVIES (Same format)
+  // Explicit Close Listener for Writings 
+  var wClose = document.getElementById('wCloseBtn');
+  if(wClose) wClose.addEventListener('click', function(){ closeOv('writings'); });
+
+  // BIRTHDAY Navigation [cite: 523-527]
   var bsl = document.querySelectorAll('.bs'), bi = 0;
-  function bUpd(){ bsl.forEach(function(s){ s.classList.remove('active'); }); bsl[bi].classList.add('active'); document.getElementById('bCount').textContent = (bi + 1) + ' / ' + bsl.length; }
+  function bUpd(){ 
+    bsl.forEach(function(s){ s.classList.remove('active'); }); 
+    bsl[bi].classList.add('active'); 
+    document.getElementById('bCount').textContent = (bi + 1) + ' / ' + bsl.length; 
+  }
   document.getElementById('bCloseBtn').addEventListener('click', function(){ closeOv('birthday'); });
   document.getElementById('bPrevBtn').addEventListener('click', function(){ bi = (bi - 1 + bsl.length) % bsl.length; bUpd(); });
   document.getElementById('bNextBtn').addEventListener('click', function(){ bi = (bi + 1) % bsl.length; bUpd(); });
 
+  // MOVIE & MUSIC Navigation [cite: 528-533]
   function mmSlide(id, d){
     var el = document.getElementById(id), sl = el.querySelectorAll('.mms'), cur = 0;
     sl.forEach(function(s, i){ if(s.classList.contains('active')) cur = i; });
@@ -626,7 +689,11 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('muPrev').addEventListener('click', function(){ mmSlide('muShow', -1); });
   document.getElementById('muNext').addEventListener('click', function(){ mmSlide('muShow', 1); });
 
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.ov.open').forEach(function(f){ f.classList.remove('open'); }); });
+  // Global Escape Key Listener [cite: 534]
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') document.querySelectorAll('.ov.open').forEach(function(f){ f.classList.remove('open'); });
+  });
+
 })();
 </script>
 </body>
