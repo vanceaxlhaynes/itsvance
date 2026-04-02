@@ -532,7 +532,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   'use strict';
   var ready = false;
 
-  // Theme Toggle [cite: 491-495]
+  // Theme Toggle Logic [cite: 491-495]
   document.getElementById('togBtn').addEventListener('click', function(){
     var h = document.documentElement, l = document.getElementById('togLabel');
     if(h.getAttribute('data-theme') === 'dark'){
@@ -544,7 +544,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
     }
   });
 
-  // Screen Transition [cite: 496-501]
+  // Screen Transition Logic [cite: 496-501]
   document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
@@ -612,7 +612,7 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   document.getElementById('cNextBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci + 1) % csl.length; cUpd(); });
   document.getElementById('cPrevBtn').addEventListener('click', function(e){ e.stopPropagation(); ci = (ci - 1 + csl.length) % csl.length; cUpd(); });
 
-  // FIXED: WRITINGS Navigation 
+  // UPDATED: WRITINGS Navigation Logic 
   var wsl = document.querySelectorAll('.ws'), wi = 0;
   function wUpd(){ 
     wsl.forEach(function(s){ s.classList.remove('active'); }); 
@@ -621,12 +621,12 @@ to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></
   }
   
   document.getElementById('wNext').addEventListener('click', function(){ 
-    wi = (wi + 1) % wsl.length; 
+    wi = (wi + 1) % wsl.length; // Fixed: Loops back to first poem [cite: 521]
     wUpd(); 
   });
   
   document.getElementById('wPrev').addEventListener('click', function(){ 
-    wi = (wi - 1 + wsl.length) % wsl.length; 
+    wi = (wi - 1 + wsl.length) % wsl.length; // Fixed: Loops to last poem [cite: 522]
     wUpd(); 
   });
 
