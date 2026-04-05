@@ -12,7 +12,7 @@
       --bg: #1e1e1e;
       --text: #e2ded6;
       --text-dim: #9a958e;
-      --text-muted: #5a5755;
+      --text-muted: #7a7775;
       --accent: #d4c87a;
       --white: #f2eee6;
       --border: #444;
@@ -61,7 +61,7 @@
       z-index: 4000; display: flex; align-items: center; gap: 7px;
     }
     .tog-label {
-      font-size: 0.48rem; color: var(--text-muted);
+      font-size: 0.48rem; color: var(--text-dim);
       letter-spacing: 0.08em; text-transform: uppercase;
       transition: color 0.3s;
     }
@@ -95,7 +95,10 @@
     /* ===== LANDING ===== */
     #landing { z-index: 3000; background: var(--bg); overflow: hidden; }
     .l-video {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
       object-fit: cover; z-index: 0;
     }
     [data-theme="dark"] .l-video { opacity: 0.35; }
@@ -124,7 +127,7 @@
       z-index: 4000; background: none; border: 1px solid var(--border);
       font-family: Consolas, 'Courier New', Courier, monospace;
       font-size: 0.55rem; font-weight: normal;
-      color: var(--text-muted); padding: 6px 12px;
+      color: var(--text-dim); padding: 6px 12px;
       cursor: pointer; transition: all 0.3s; letter-spacing: 0.05em;
       text-transform: uppercase;
     }
@@ -142,7 +145,7 @@
     .site-mark {
       position: absolute; top: 1.2rem; left: 50%;
       transform: translateX(-50%);
-      font-size: 0.68rem; color: var(--text-muted);
+      font-size: 0.68rem; color: var(--text-dim);
       letter-spacing: 0.08em; pointer-events: none;
     }
 
@@ -178,7 +181,7 @@
     }
     .polaroid-cap {
       position: absolute; bottom: 7px; left: 8px; right: 8px;
-      font-size: 0.52rem; color: #999; text-align: center; font-weight: normal;
+      font-size: 0.52rem; color: var(--text-dim); text-align: center; font-weight: normal;
     }
     .cs { display: none; position: absolute; inset: 0; }
     .cs.active { display: flex; }
@@ -196,7 +199,7 @@
       background: none; border: none;
       font-family: Consolas, 'Courier New', Courier, monospace;
       font-size: 0.62rem; font-weight: normal;
-      color: var(--text-muted); cursor: pointer; transition: color 0.2s;
+      color: var(--text-dim); cursor: pointer; transition: color 0.2s;
     }
     .c-nav-btn:hover { color: var(--text); }
     .c-dots { display: flex; gap: 4px; }
@@ -263,31 +266,63 @@
     .mu-artist { font-size: 0.68rem; color: var(--accent); margin-bottom: 0.6rem; font-weight: normal; }
     .mu-note { font-size: 0.72rem; color: var(--text-dim); font-weight: normal; line-height: 1.9; max-width: 360px; margin: 0 auto; }
     .mm-nav { display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin-top: 1.2rem; }
-    .mm-nav-btn { background: none; border: none; font-family: Consolas, 'Courier New', Courier, monospace; font-size: 1rem; font-weight: normal; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+    .mm-nav-btn { background: none; border: none; font-family: Consolas, 'Courier New', Courier, monospace; font-size: 1rem; font-weight: normal; color: var(--text-dim); cursor: pointer; transition: color 0.2s; }
     .mm-nav-btn:hover { color: var(--text); }
-    .mm-counter { font-size: 0.58rem; color: var(--text-muted); min-width: 32px; text-align: center; }
+    .mm-counter { font-size: 0.58rem; color: var(--text-dim); min-width: 32px; text-align: center; }
     .mm-divider { width: 40px; height: 1px; background: var(--border); margin: 2.5rem auto; }
 
-    .site-footer { position: absolute; bottom: 0.6rem; width: 100%; text-align: center; font-size: 0.5rem; color: var(--text-muted); pointer-events: none; z-index: 1; }
+    .site-footer { position: absolute; bottom: 0.6rem; width: 100%; text-align: center; font-size: 0.5rem; color: var(--text-dim); pointer-events: none; z-index: 1; }
 
     /* LOADING STATE */
-    .loading-msg { font-size: 0.6rem; color: var(--text-muted); text-align: center; padding: 3rem 1rem; letter-spacing: 0.05em; }
+    .loading-msg { font-size: 0.6rem; color: var(--text-dim); text-align: center; padding: 3rem 1rem; letter-spacing: 0.05em; }
 
     @keyframes fadeUp { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
     @keyframes fadeIn { from{opacity:0;}to{opacity:1;} }
 
-    @media (max-width:600px) {
-      .folder-icon { width: 56px; }
-      .folder-label { font-size: 0.52rem; }
-      .polaroid-frame { width: 210px; }
-      .ws { padding: 3rem 1.2rem 2rem; }
-      .b-polaroid img { width: 160px; }
+    @media (max-width:768px) {
+      .l-inner { max-width: 90%; padding: 1.5rem; }
+      .l-body { font-size: 0.78rem; line-height: 2; }
+      .l-title { font-size: 0.8rem; margin-bottom: 2rem; }
+      .folder-icon { width: 60px; }
+      .folder-label { font-size: 0.55rem; }
+      .polaroid-frame { width: 220px; }
+      .ws { padding: 3.5rem 1.2rem 4rem; }
+      .ws-body { font-size: 0.78rem; }
+      .b-polaroid img { width: 170px; }
       .mm-section { padding: 1.5rem 1.2rem; }
+      .mv-note, .mu-note { font-size: 0.68rem; }
+    }
+
+    @media (max-width:480px) {
+      .l-inner { max-width: 100%; padding: 1.2rem; }
+      .l-body { font-size: 0.72rem; line-height: 1.9; margin-bottom: 2rem; }
+      .l-title { font-size: 0.75rem; margin-bottom: 1.5rem; }
+      .l-btn { font-size: 0.7rem; padding: 8px 24px; }
+      .folder-icon { width: 50px; }
+      .folder-label { font-size: 0.5rem; }
+      .polaroid-frame { width: 190px; }
+      .polaroid-cap { font-size: 0.45rem; }
+      .c-nav-btn { font-size: 0.55rem; }
+      .ws { padding: 3rem 1rem 4rem; }
+      .ws-body { font-size: 0.72rem; line-height: 1.9; }
+      .ws-type { font-size: 0.5rem; }
+      .w-bar { padding: 0.8rem 1rem; }
+      .w-nav { bottom: 1rem; }
+      .b-polaroid img { width: 140px; }
+      .b-greeting { font-size: 0.78rem; }
+      .b-name { font-size: 0.75rem; }
+      .mm-section { padding: 1.2rem 1rem; }
+      .mv-poster { width: 130px; }
+      .mu-art { width: 130px; height: 130px; }
+      .mv-title, .mu-title { font-size: 0.8rem; }
+      .mv-note, .mu-note { font-size: 0.65rem; max-width: 280px; }
       .tog-wrap { top: 0.6rem; right: 0.6rem; }
       .tog { width: 36px; height: 20px; }
       .tog::after { width: 16px; height: 16px; }
       [data-theme="light"] .tog::after { transform: translateX(16px); }
       .snd-btn { bottom: 0.6rem; right: 0.6rem; font-size: 0.48rem; padding: 5px 10px; }
+      .ov-btn { font-size: 0.68rem; }
+      .site-mark { font-size: 0.58rem; }
     }
   </style>
 </head>
@@ -300,7 +335,7 @@
 
 <!-- LANDING -->
 <div class="screen" id="landing">
-  <video class="l-video" id="bgVideo" autoplay muted loop playsinline>
+  <video class="l-video" id="bgVideo" autoplay muted loop playsinline webkit-playsinline>
     <source src="bg.mp4" type="video/mp4">
   </video>
   <div class="l-overlay"></div>
@@ -429,6 +464,16 @@ Thank you for finding this place.
   /* ===== SOUND TOGGLE ===== */
   var bgVideo = document.getElementById('bgVideo');
   var sndBtn = document.getElementById('sndBtn');
+
+  // Ensure video plays on mobile
+  bgVideo.play().catch(function() {
+    // If autoplay blocked, play on first touch
+    document.addEventListener('touchstart', function playOnce() {
+      bgVideo.play();
+      document.removeEventListener('touchstart', playOnce);
+    }, { once: true });
+  });
+
   sndBtn.addEventListener('click', function(){
     if (bgVideo.muted) {
       bgVideo.muted = false;
@@ -544,7 +589,7 @@ Thank you for finding this place.
     // Birthday slide
     if (birthdays.length) {
       var b = birthdays[0];
-      html += '<div class="cs' + (idx === 0 ? ' active' : '') + '"><img src="' + esc(b.photoUrl) + '" alt="" loading="lazy"><div class="cs-overlay"><div class="cso-title">' + esc(b.greeting) + ', ' + esc(b.title) + '</div><div class="cso-sub">' + esc(b.dateLabel) + '</div></div></div>';
+      html += '<div class="cs' + (idx === 0 ? ' active' : '') + '"><img src="' + esc(b.photoUrl) + '" alt="" loading="lazy"><div class="cs-overlay"><div class="cso-title">' + esc(b.title) + '</div><div class="cso-sub">' + esc(b.dateLabel) + '</div></div></div>';
       caps.push('latest — birthday');
       dotHtml += '<div class="c-dot' + (idx === 0 ? ' active' : '') + '"></div>';
       idx++;
@@ -565,8 +610,14 @@ Thank you for finding this place.
       document.getElementById('capText').textContent = caps[ci] || '';
     }
 
-    document.getElementById('cNextBtn').addEventListener('click', function(e) { e.stopPropagation(); ci = (ci + 1) % carouselSlides.length; cUpd(); });
-    document.getElementById('cPrevBtn').addEventListener('click', function(e) { e.stopPropagation(); ci = (ci - 1 + carouselSlides.length) % carouselSlides.length; cUpd(); });
+    document.getElementById('cNextBtn').addEventListener('click', function(e) { e.stopPropagation(); ci = (ci + 1) % carouselSlides.length; cUpd(); resetAuto(); });
+    document.getElementById('cPrevBtn').addEventListener('click', function(e) { e.stopPropagation(); ci = (ci - 1 + carouselSlides.length) % carouselSlides.length; cUpd(); resetAuto(); });
+
+    // Auto-slide every 5 seconds, resets on manual nav
+    var autoTimer;
+    function startAuto() { autoTimer = setInterval(function() { ci = (ci + 1) % carouselSlides.length; cUpd(); }, 5000); }
+    function resetAuto() { clearInterval(autoTimer); startAuto(); }
+    startAuto();
   }
 
   /* ===== WRITINGS ===== */
