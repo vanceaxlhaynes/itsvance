@@ -93,8 +93,19 @@
     .screen--hidden { display: none !important; }
 
     /* ===== LANDING ===== */
-    #landing { z-index: 3000; background: var(--bg); }
-    .l-inner { max-width: 480px; padding: 2rem; text-align: left; animation: fadeUp 1s ease both; }
+    #landing { z-index: 3000; background: var(--bg); overflow: hidden; }
+    .l-video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 0;
+    }
+    [data-theme="dark"] .l-video { opacity: 0.15; filter: invert(1); }
+    [data-theme="light"] .l-video { opacity: 0.3; mix-blend-mode: multiply; }
+    .l-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: var(--bg); opacity: 0.4;
+      transition: background 0.4s, opacity 0.4s;
+    }
+    .l-inner { max-width: 480px; padding: 2rem; text-align: left; animation: fadeUp 1s ease both; position: relative; z-index: 2; }
     .l-title { font-size: 0.85rem; margin-bottom: 2.5rem; letter-spacing: 0.03em; }
     .l-body { font-size: 0.82rem; line-height: 2.2; margin-bottom: 3rem; white-space: pre-line; }
     .l-sign { font-size: 0.78rem; color: var(--text-dim); margin-top: 1.5rem; }
@@ -106,6 +117,19 @@
       cursor: pointer; transition: all 0.3s; letter-spacing: 0.03em;
     }
     .l-btn:hover { border-color: var(--text); color: var(--text); }
+
+    /* ===== SOUND TOGGLE ===== */
+    .snd-btn {
+      position: fixed; bottom: 1.2rem; right: 1.2rem;
+      z-index: 4000; background: none; border: 1px solid var(--border);
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.55rem; font-weight: normal;
+      color: var(--text-muted); padding: 6px 12px;
+      cursor: pointer; transition: all 0.3s; letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .snd-btn:hover { border-color: var(--text); color: var(--text); }
+    .snd-btn.hidden { display: none; }
 
     /* ===== MAIN ===== */
     #main {
@@ -263,6 +287,7 @@
       .tog { width: 36px; height: 20px; }
       .tog::after { width: 16px; height: 16px; }
       [data-theme="light"] .tog::after { transform: translateX(16px); }
+      .snd-btn { bottom: 0.6rem; right: 0.6rem; font-size: 0.48rem; padding: 5px 10px; }
     }
   </style>
 </head>
@@ -275,6 +300,10 @@
 
 <!-- LANDING -->
 <div class="screen" id="landing">
+  <video class="l-video" id="bgVideo" autoplay muted loop playsinline>
+    <source src="bg.mp4" type="video/mp4">
+  </video>
+  <div class="l-overlay"></div>
   <div class="l-inner">
     <div class="l-title">a quiet place</div>
     <div class="l-body">I spend most of my days with fleeting
@@ -298,6 +327,9 @@ Thank you for finding this place.
     <button class="l-btn" id="enterBtn">come in</button>
   </div>
 </div>
+
+<!-- SOUND TOGGLE -->
+<button class="snd-btn" id="sndBtn">sound on</button>
 
 <!-- MAIN -->
 <div class="screen screen--hidden" id="main">
@@ -394,11 +426,26 @@ Thank you for finding this place.
     else { h.setAttribute('data-theme','dark'); l.textContent = 'light'; }
   });
 
+  /* ===== SOUND TOGGLE ===== */
+  var bgVideo = document.getElementById('bgVideo');
+  var sndBtn = document.getElementById('sndBtn');
+  sndBtn.addEventListener('click', function(){
+    if (bgVideo.muted) {
+      bgVideo.muted = false;
+      sndBtn.textContent = 'sound off';
+    } else {
+      bgVideo.muted = true;
+      sndBtn.textContent = 'sound on';
+    }
+  });
+
   /* ===== ENTER ===== */
   document.getElementById('enterBtn').addEventListener('click', function(){
     document.getElementById('landing').classList.add('screen--hidden');
     document.getElementById('main').classList.remove('screen--hidden');
     document.getElementById('main').classList.add('animate');
+    bgVideo.pause();
+    sndBtn.classList.add('hidden');
     setTimeout(function(){ ready = true; }, 700);
   });
 
