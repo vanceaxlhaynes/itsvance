@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Of Silence and Sound</title>
+  <title>the art of being</title>
   <!-- Consolas is a system font, no external load needed -->
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -176,17 +176,23 @@
     /* ===== POLAROID CAROUSEL ===== */
     .polaroid-wrap { display: flex; flex-direction: column; align-items: center; }
     .polaroid-frame {
-      background: var(--white); padding: 8px 8px 32px;
-      box-shadow: 0 6px 30px var(--pol-shadow);
-      width: 250px; position: relative; transition: box-shadow 0.4s;
+      width: 250px; position: relative;
+      aspect-ratio: 646 / 1019;
+      transform: rotate(-1.2deg);
+    }
+    .polaroid-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
     }
     .polaroid-inner {
-      width: 100%; aspect-ratio: 3/4;
-      overflow: hidden; position: relative; background: #1e1e1e;
+      position: absolute;
+      top: 9%; left: 6.5%; width: 86.7%; height: 72.6%;
+      overflow: hidden; z-index: 1; background: #1a1a1a;
     }
     .polaroid-cap {
-      position: absolute; bottom: 7px; left: 8px; right: 8px;
-      font-size: 0.52rem; color: var(--text-dim); text-align: center; font-weight: normal;
+      position: absolute; bottom: 4%; left: 10%; right: 10%;
+      font-size: 0.5rem; color: #706b62; text-align: center; font-weight: normal;
+      font-style: italic; z-index: 3;
     }
     .cs { display: none; position: absolute; inset: 0; }
     .cs.active { display: flex; }
@@ -246,8 +252,20 @@
     .b-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; z-index: 10; }
     .bs { display: none; text-align: center; }
     .bs.active { display: block; animation: fadeIn 0.3s ease both; }
-    .b-polaroid { background: var(--white); padding: 8px 8px 28px; box-shadow: 0 4px 20px var(--pol-shadow); display: inline-block; margin-bottom: 1.2rem; transition: box-shadow 0.4s; }
-    .b-polaroid img { width: 200px; aspect-ratio: 3/4; object-fit: cover; background: #888; }
+    .b-polaroid {
+      position: relative; display: inline-block;
+      width: 220px; aspect-ratio: 646 / 1019;
+      margin-bottom: 1.2rem;
+    }
+    .b-polaroid .polaroid-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
+    }
+    .b-polaroid img:not(.polaroid-img) {
+      position: absolute;
+      top: 9%; left: 6.5%; width: 86.7%; height: 72.6%;
+      object-fit: cover; z-index: 1; background: #888;
+    }
     .b-greeting { font-size: 0.85rem; margin-bottom: 0.15rem; }
     .b-name { font-size: 0.82rem; color: var(--accent); }
     .b-date-label { font-size: 0.58rem; color: var(--text-muted); margin-top: 0.5rem; }
@@ -278,6 +296,40 @@
 
     .site-footer { position: absolute; bottom: 0.6rem; width: 100%; text-align: center; font-size: 0.5rem; color: var(--text-dim); pointer-events: none; z-index: 1; }
 
+    /* SUBSCRIBE BAR */
+    .sub-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 50; padding: 0.8rem 1.2rem;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+      background: linear-gradient(transparent, var(--bg) 30%);
+      transform: translateY(100%);
+      transition: transform 0.5s ease;
+    }
+    .sub-bar.show { transform: translateY(0); }
+    .sub-input {
+      background: transparent; border: 1px solid var(--border);
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.6rem; color: var(--text);
+      padding: 7px 12px; width: 200px; max-width: 40vw;
+      outline: none; transition: border-color 0.3s;
+    }
+    .sub-input::placeholder { color: var(--text-muted); }
+    .sub-input:focus { border-color: var(--text-dim); }
+    .sub-send {
+      background: none; border: 1px solid var(--border);
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.55rem; color: var(--text-dim);
+      padding: 7px 14px; cursor: pointer;
+      transition: all 0.3s; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .sub-send:hover { border-color: var(--text); color: var(--text); }
+    .sub-msg {
+      font-size: 0.55rem; color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+    .sub-msg.error { color: var(--text-dim); }
+
     /* LOADING STATE */
     .loading-msg { font-size: 0.6rem; color: var(--text-dim); text-align: center; padding: 3rem 1rem; letter-spacing: 0.05em; }
 
@@ -293,7 +345,7 @@
       .polaroid-frame { width: 220px; }
       .ws { padding: 3.5rem 1.2rem 4rem; }
       .ws-body { font-size: 0.78rem; }
-      .b-polaroid img { width: 170px; }
+      .b-polaroid { width: 180px; }
       .mm-section { padding: 1.5rem 1.2rem; }
       .mv-note, .mu-note { font-size: 0.68rem; }
     }
@@ -313,7 +365,7 @@
       .ws-type { font-size: 0.5rem; }
       .w-bar { padding: 0.8rem 1rem; }
       .w-nav { bottom: 1rem; }
-      .b-polaroid img { width: 140px; }
+      .b-polaroid { width: 150px; }
       .b-greeting { font-size: 0.78rem; }
       .b-name { font-size: 0.75rem; }
       .mm-section { padding: 1.2rem 1rem; }
@@ -328,6 +380,11 @@
       .snd-btn { bottom: 0.6rem; right: 0.6rem; font-size: 0.48rem; padding: 5px 10px; }
       .ov-btn { font-size: 0.68rem; }
       .site-mark { font-size: 0.58rem; }
+      .sub-bar { padding: 0.6rem 0.8rem; gap: 6px; }
+      .sub-input { width: 140px; max-width: 45vw; font-size: 0.55rem; padding: 6px 10px; }
+      .sub-send { font-size: 0.5rem; padding: 6px 10px; }
+      .sub-msg { font-size: 0.5rem; }
+      .polaroid-frame { transform: rotate(-0.8deg); }
     }
   </style>
 </head>
@@ -345,7 +402,7 @@
   </video>
   <div class="l-overlay"></div>
   <div class="l-inner">
-    <div class="l-title">Of Silence and Sound</div>
+    <div class="l-title">the art of being</div>
     <div class="l-body">I spend most of my days with fleeting
 thoughts. Writing. Reading. And sitting
 with silence long enough to hear
@@ -373,7 +430,7 @@ Thank you for finding this place.
 
 <!-- MAIN -->
 <div class="screen screen--hidden" id="main">
-  <div class="site-mark">Of Silence and Sound</div>
+  <div class="site-mark">the art of being</div>
 
   <div class="draggable folder-item" data-click="birthday" style="top:18%;left:calc(50% - 140px);">
     <img class="folder-icon" src="https://oklama.com/_next/static/media/gray.baac307f.png" alt="birthday wishes" draggable="false">
@@ -390,6 +447,7 @@ Thank you for finding this place.
 
   <div class="draggable polaroid-wrap" style="top:44%;left:calc(50% - 125px);">
     <div class="polaroid-frame">
+      <img class="polaroid-img" src="polaroid.png" alt="" draggable="false">
       <div class="polaroid-inner" id="carouselInner">
         <!-- Filled dynamically -->
       </div>
@@ -400,6 +458,12 @@ Thank you for finding this place.
       <div class="c-dots" id="carouselDots"></div>
       <button class="c-nav-btn" id="cNextBtn">next →</button>
     </div>
+  </div>
+
+  <div class="sub-bar" id="subBar">
+    <input class="sub-input" id="subEmail" type="email" placeholder="your email" autocomplete="email">
+    <button class="sub-send" id="subBtn">subscribe</button>
+    <span class="sub-msg" id="subMsg"></span>
   </div>
 
   <div class="site-footer">est. 2026</div>
@@ -497,6 +561,7 @@ Thank you for finding this place.
     bgVideo.pause();
     sndBtn.classList.add('hidden');
     setTimeout(function(){ ready = true; }, 700);
+    setTimeout(function(){ document.getElementById('subBar').classList.add('show'); }, 1500);
   });
 
   /* ===== OVERLAYS ===== */
@@ -506,7 +571,7 @@ Thank you for finding this place.
   /* ===== DRAG ===== */
   var dragEl=null, offX=0, offY=0, sX=0, sY=0, moved=false;
   function xy(e) { return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
-  function down(e) { if(!ready) return; var tag=e.target.tagName.toLowerCase(); if(tag==='button'||e.target.closest('button')) return; dragEl=e.currentTarget; var r=dragEl.getBoundingClientRect(), p=xy(e); offX=p.x-r.left; offY=p.y-r.top; sX=p.x; sY=p.y; moved=false; dragEl.classList.add('dragging'); e.preventDefault(); }
+  function down(e) { if(!ready) return; var tag=e.target.tagName.toLowerCase(); if(tag==='button'||tag==='input'||e.target.closest('button')||e.target.closest('.sub-bar')) return; dragEl=e.currentTarget; var r=dragEl.getBoundingClientRect(), p=xy(e); offX=p.x-r.left; offY=p.y-r.top; sX=p.x; sY=p.y; moved=false; dragEl.classList.add('dragging'); e.preventDefault(); }
   function move(e) { if(!dragEl) return; var p=xy(e); if(Math.abs(p.x-sX)>5||Math.abs(p.y-sY)>5) moved=true; dragEl.style.left=(p.x-offX)+'px'; dragEl.style.top=(p.y-offY)+'px'; e.preventDefault(); }
   function up() { if(!dragEl) return; dragEl.classList.remove('dragging'); if(!moved&&ready){ var t=dragEl.dataset.click; if(t) openOv(t); } dragEl=null; }
   document.addEventListener('mousemove', move);
@@ -673,7 +738,7 @@ Thank you for finding this place.
 
     var html = '';
     items.forEach(function(b, i) {
-      html += '<div class="bs' + (i === 0 ? ' active' : '') + '"><div class="b-polaroid"><img src="' + esc(b.photoUrl) + '" alt="" loading="lazy"></div><div class="b-greeting">' + esc(b.greeting) + '</div><div class="b-name">' + esc(b.title) + '</div><div class="b-date-label">' + esc(b.dateLabel) + '</div></div>';
+      html += '<div class="bs' + (i === 0 ? ' active' : '') + '"><div class="b-polaroid"><img class="polaroid-img" src="polaroid.png" alt="" draggable="false"><img src="' + esc(b.photoUrl) + '" alt="" loading="lazy"></div><div class="b-greeting">' + esc(b.greeting) + '</div><div class="b-name">' + esc(b.title) + '</div><div class="b-date-label">' + esc(b.dateLabel) + '</div></div>';
     });
     container.innerHTML = html;
 
@@ -736,6 +801,50 @@ Thank you for finding this place.
   }
 
   document.getElementById('mmCloseBtn').addEventListener('click', function() { closeOv('moviemusic'); });
+
+  /* ===== SUBSCRIBE ===== */
+  var subBtn = document.getElementById('subBtn');
+  var subEmail = document.getElementById('subEmail');
+  var subMsg = document.getElementById('subMsg');
+
+  subBtn.addEventListener('click', handleSubscribe);
+  subEmail.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSubscribe(); });
+
+  function handleSubscribe() {
+    var email = subEmail.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      subMsg.textContent = 'enter a valid email';
+      subMsg.className = 'sub-msg error';
+      return;
+    }
+    subBtn.textContent = '...';
+    subBtn.disabled = true;
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        subMsg.textContent = 'you\'re in. thank you.';
+        subMsg.className = 'sub-msg';
+        subEmail.style.display = 'none';
+        subBtn.style.display = 'none';
+      } else {
+        subMsg.textContent = data.error || 'something went wrong';
+        subMsg.className = 'sub-msg error';
+        subBtn.textContent = 'subscribe';
+        subBtn.disabled = false;
+      }
+    })
+    .catch(function() {
+      subMsg.textContent = 'something went wrong';
+      subMsg.className = 'sub-msg error';
+      subBtn.textContent = 'subscribe';
+      subBtn.disabled = false;
+    });
+  }
 })();
 </script>
 </body>
