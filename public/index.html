@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>the art of being</title>
   <!-- Consolas is a system font, no external load needed -->
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -177,7 +178,7 @@
     .polaroid-wrap { display: flex; flex-direction: column; align-items: center; }
     .polaroid-frame {
       width: 250px; position: relative;
-      aspect-ratio: 646 / 1019;
+      aspect-ratio: 676 / 1040;
       transform: rotate(-1.2deg);
     }
     .polaroid-img {
@@ -186,13 +187,16 @@
     }
     .polaroid-inner {
       position: absolute;
-      top: 9%; left: 6.5%; width: 86.7%; height: 72.6%;
+      top: 8.8%; left: 8.7%; width: 82.5%; height: 72%;
       overflow: hidden; z-index: 1; background: #1a1a1a;
     }
     .polaroid-cap {
-      position: absolute; bottom: 4%; left: 10%; right: 10%;
-      font-size: 0.5rem; color: #706b62; text-align: center; font-weight: normal;
-      font-style: italic; z-index: 3;
+      position: absolute; bottom: 4.5%; left: 12%; right: 12%;
+      font-family: 'Permanent Marker', cursive;
+      font-size: 0.6rem; color: #2a2520; text-align: center;
+      font-weight: normal; font-style: normal;
+      z-index: 3; letter-spacing: 0.03em;
+      text-transform: lowercase;
     }
     .cs { display: none; position: absolute; inset: 0; }
     .cs.active { display: flex; }
@@ -254,7 +258,7 @@
     .bs.active { display: block; animation: fadeIn 0.3s ease both; }
     .b-polaroid {
       position: relative; display: inline-block;
-      width: 220px; aspect-ratio: 646 / 1019;
+      width: 220px; aspect-ratio: 676 / 1040;
       margin-bottom: 1.2rem;
     }
     .b-polaroid .polaroid-img {
@@ -263,7 +267,7 @@
     }
     .b-polaroid img:not(.polaroid-img) {
       position: absolute;
-      top: 9%; left: 6.5%; width: 86.7%; height: 72.6%;
+      top: 8.8%; left: 8.7%; width: 82.5%; height: 72%;
       object-fit: cover; z-index: 1; background: #888;
     }
     .b-greeting { font-size: 0.85rem; margin-bottom: 0.15rem; }
