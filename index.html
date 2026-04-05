@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>a quiet place</title>
+  <!-- Consolas is a system font, no external load needed -->
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    [data-theme="dark"] {
+      --bg: #1e1e1e;
+      --text: #ccc8c0;
+      --text-dim: #706c65;
+      --text-muted: #3a3835;
+      --accent: #d4c87a;
+      --white: #f2eee6;
+      --border: #333;
+      --ov-bg: #1e1e1e;
+      --img-border: #333;
+      --pol-shadow: rgba(0,0,0,0.6);
+      --mm-border: #2a2a2a;
+      --toggle-track: #3a3835;
+      --toggle-knob: #ccc8c0;
+    }
+    [data-theme="light"] {
+      --bg: #f0ebe3;
+      --text: #2a2520;
+      --text-dim: #6a6560;
+      --text-muted: #b0a8a0;
+      --accent: #8b7040;
+      --white: #f2eee6;
+      --border: #ccc5ba;
+      --ov-bg: #f0ebe3;
+      --img-border: #ccc5ba;
+      --pol-shadow: rgba(0,0,0,0.12);
+      --mm-border: #ddd8d0;
+      --toggle-track: #ccc5ba;
+      --toggle-knob: #fff;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-weight: normal;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+    img { display: block; }
+
+    /* ===== iOS TOGGLE ===== */
+    .tog-wrap {
+      position: fixed; top: 1rem; right: 1.2rem;
+      z-index: 4000; display: flex; align-items: center; gap: 7px;
+    }
+    .tog-label {
+      font-size: 0.48rem; color: var(--text-muted);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .tog {
+      width: 42px; height: 24px;
+      background: var(--toggle-track);
+      border-radius: 12px; border: none;
+      cursor: pointer; position: relative;
+      transition: background 0.3s;
+      -webkit-appearance: none; appearance: none; padding: 0;
+    }
+    .tog::after {
+      content: ''; position: absolute;
+      top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+    [data-theme="light"] .tog { background: var(--accent); }
+    [data-theme="light"] .tog::after { transform: translateX(18px); }
+
+    /* ===== SCREENS ===== */
+    .screen {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .screen--hidden { display: none !important; }
+
+    /* ===== LANDING ===== */
+    #landing { z-index: 3000; background: var(--bg); }
+    .l-inner { max-width: 480px; padding: 2rem; text-align: left; animation: fadeUp 1s ease both; }
+    .l-title { font-size: 0.85rem; margin-bottom: 2.5rem; letter-spacing: 0.03em; }
+    .l-body { font-size: 0.82rem; line-height: 2.2; margin-bottom: 3rem; white-space: pre-line; }
+    .l-sign { font-size: 0.78rem; color: var(--text-dim); margin-top: 1.5rem; }
+    .l-btn {
+      background: none; border: 1px solid var(--border);
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.75rem; font-weight: normal;
+      color: var(--text-dim); padding: 10px 32px;
+      cursor: pointer; transition: all 0.3s; letter-spacing: 0.03em;
+    }
+    .l-btn:hover { border-color: var(--text); color: var(--text); }
+
+    /* ===== MAIN ===== */
+    #main {
+      z-index: 1; background: var(--bg);
+      width: 100%; height: 100%;
+      position: relative; overflow: hidden;
+      transition: background 0.4s;
+    }
+    #main.animate { animation: fadeIn 0.6s ease both; }
+    .site-mark {
+      position: absolute; top: 1.2rem; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem; color: var(--text-muted);
+      letter-spacing: 0.08em; pointer-events: none;
+    }
+
+    /* ===== DRAGGABLE ===== */
+    .draggable { position: absolute; cursor: grab; z-index: 10; touch-action: none; }
+    .draggable:active { cursor: grabbing; }
+    .draggable.dragging { z-index: 100; }
+
+    /* ===== FOLDERS (actual oklama.com icons) ===== */
+    .folder-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .folder-icon {
+      width: 72px; height: auto;
+      image-rendering: pixelated;
+      -ms-interpolation-mode: nearest-neighbor;
+      pointer-events: none;
+    }
+    .folder-label {
+      font-size: 0.62rem; color: var(--text-dim);
+      text-align: center; white-space: nowrap;
+      letter-spacing: 0.02em; transition: color 0.3s;
+    }
+
+    /* ===== POLAROID CAROUSEL ===== */
+    .polaroid-wrap { display: flex; flex-direction: column; align-items: center; }
+    .polaroid-frame {
+      background: var(--white); padding: 8px 8px 32px;
+      box-shadow: 0 6px 30px var(--pol-shadow);
+      width: 250px; position: relative; transition: box-shadow 0.4s;
+    }
+    .polaroid-inner {
+      width: 100%; aspect-ratio: 3/4;
+      overflow: hidden; position: relative; background: #1e1e1e;
+    }
+    .polaroid-cap {
+      position: absolute; bottom: 7px; left: 8px; right: 8px;
+      font-size: 0.52rem; color: #999; text-align: center; font-weight: normal;
+    }
+    .cs { display: none; position: absolute; inset: 0; }
+    .cs.active { display: flex; }
+    .cs img { width: 100%; height: 100%; object-fit: cover; }
+    .cs-writing {
+      background: #1e1e1e; padding: 1rem 0.8rem;
+      display: flex; flex-direction: column;
+      width: 100%; height: 100%; overflow: hidden; color: #ccc8c0;
+    }
+    .csw-type { font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.12em; color: #3a3835; margin-bottom: 0.6rem; }
+    .csw-body { font-size: 0.55rem; color: #ccc8c0; line-height: 2; overflow: hidden; flex: 1; }
+    .cs-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 1rem 0.8rem 0.6rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85) 40%);
+    }
+    .cso-title { font-size: 0.7rem; color: #fff; }
+    .cso-sub { font-size: 0.5rem; color: #aaa; font-weight: normal; }
+    .cso-stars { font-size: 0.6rem; color: var(--accent); margin-top: 0.15rem; }
+    .c-nav { display: flex; align-items: center; gap: 1.2rem; margin-top: 0.8rem; }
+    .c-nav-btn {
+      background: none; border: none;
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.62rem; font-weight: normal;
+      color: var(--text-muted); cursor: pointer; transition: color 0.2s;
+    }
+    .c-nav-btn:hover { color: var(--text); }
+    .c-dots { display: flex; gap: 4px; }
+    .c-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); transition: background 0.3s; }
+    .c-dot.active { background: var(--text); }
+
+    /* ===== OVERLAYS ===== */
+    .ov {
+      display: none !important;
+      position: fixed; inset: 0;
+      z-index: 2000; background: var(--ov-bg);
+      transition: background 0.4s;
+    }
+    .ov.open.w-ov { display: block !important; animation: fadeIn 0.25s ease both; }
+    .ov.open.b-ov { display: flex !important; align-items: center; justify-content: center; flex-direction: column; animation: fadeIn 0.25s ease both; }
+    .ov.open.mm-ov { display: block !important; overflow-y: auto; animation: fadeIn 0.25s ease both; }
+    .ov-btn {
+      background: none; border: none;
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      font-size: 0.75rem; font-weight: normal;
+      color: var(--text-dim); cursor: pointer; transition: color 0.2s;
+    }
+    .ov-btn:hover { color: var(--text); }
+
+    /* WRITINGS */
+    .w-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+    .w-date { font-size: 0.75rem; color: var(--text-dim); }
+    .ws { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 3.5rem 2rem 3rem; }
+    .ws.active { display: block; animation: fadeIn 0.3s ease both; }
+    .ws-inner { max-width: 520px; margin: 0 auto; }
+    .ws-type { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .ws-body { font-size: 0.85rem; line-height: 2.1; white-space: pre-line; }
+    .stanza { margin-bottom: 1rem; }
+    .ws-img { width: 240px; margin: 2rem 0; border: 1px solid var(--img-border); }
+    .ws-sign { margin-top: 2.5rem; font-size: 0.72rem; color: var(--text-muted); }
+    .w-nav { position: fixed; bottom: 1.5rem; left: 0; right: 0; display: flex; justify-content: center; gap: 2rem; z-index: 2010; }
+
+    /* BIRTHDAY */
+    .b-bar { position: absolute; top: 0; left: 0; right: 0; padding: 1rem 1.5rem; display: flex; justify-content: space-between; z-index: 10; }
+    .bs { display: none; text-align: center; }
+    .bs.active { display: block; animation: fadeIn 0.3s ease both; }
+    .b-polaroid { background: var(--white); padding: 8px 8px 28px; box-shadow: 0 4px 20px var(--pol-shadow); display: inline-block; margin-bottom: 1.2rem; transition: box-shadow 0.4s; }
+    .b-polaroid img { width: 200px; aspect-ratio: 3/4; object-fit: cover; background: #888; }
+    .b-greeting { font-size: 0.85rem; margin-bottom: 0.15rem; }
+    .b-name { font-size: 0.82rem; color: var(--accent); }
+    .b-date-label { font-size: 0.58rem; color: var(--text-muted); margin-top: 0.5rem; }
+    .b-nav { display: flex; gap: 2rem; margin-top: 1.2rem; }
+
+    /* MOVIE & MUSIC */
+    .mm-bar { position: sticky; top: 0; background: var(--ov-bg); padding: 1rem 1.5rem; display: flex; justify-content: space-between; z-index: 10; border-bottom: 1px solid var(--mm-border); transition: background 0.4s; }
+    .mm-section { max-width: 480px; margin: 0 auto; padding: 2rem; }
+    .mm-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem; }
+    .mms { display: none; text-align: center; }
+    .mms.active { display: block; animation: fadeIn 0.3s ease both; }
+    .mv-poster { width: 160px; aspect-ratio: 2/3; margin: 0 auto 1rem; border: 1px solid var(--img-border); overflow: hidden; }
+    .mv-poster img { width: 100%; height: 100%; object-fit: cover; }
+    .mv-title { font-size: 0.88rem; margin-bottom: 0.15rem; }
+    .mv-meta { font-size: 0.62rem; color: var(--text-dim); margin-bottom: 0.4rem; font-weight: normal; }
+    .mv-stars { font-size: 0.78rem; color: var(--accent); margin-bottom: 0.6rem; }
+    .mv-note { font-size: 0.72rem; color: var(--text-dim); font-weight: normal; line-height: 1.9; max-width: 360px; margin: 0 auto; }
+    .mu-art { width: 160px; height: 160px; margin: 0 auto 1rem; border: 1px solid var(--img-border); overflow: hidden; }
+    .mu-art img { width: 100%; height: 100%; object-fit: cover; }
+    .mu-title { font-size: 0.88rem; margin-bottom: 0.15rem; }
+    .mu-artist { font-size: 0.68rem; color: var(--accent); margin-bottom: 0.6rem; font-weight: normal; }
+    .mu-note { font-size: 0.72rem; color: var(--text-dim); font-weight: normal; line-height: 1.9; max-width: 360px; margin: 0 auto; }
+    .mm-nav { display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin-top: 1.2rem; }
+    .mm-nav-btn { background: none; border: none; font-family: Consolas, 'Courier New', Courier, monospace; font-size: 1rem; font-weight: normal; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+    .mm-nav-btn:hover { color: var(--text); }
+    .mm-counter { font-size: 0.58rem; color: var(--text-muted); min-width: 32px; text-align: center; }
+    .mm-divider { width: 40px; height: 1px; background: var(--border); margin: 2.5rem auto; }
+
+    .site-footer { position: absolute; bottom: 0.6rem; width: 100%; text-align: center; font-size: 0.5rem; color: var(--text-muted); pointer-events: none; z-index: 1; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn { from{opacity:0;}to{opacity:1;} }
+
+    @media (max-width:600px) {
+      .folder-icon { width: 56px; }
+      .folder-label { font-size: 0.52rem; }
+      .polaroid-frame { width: 210px; }
+      .ws { padding: 3rem 1.2rem 2rem; }
+      .b-polaroid img { width: 160px; }
+      .mm-section { padding: 1.5rem 1.2rem; }
+      .tog-wrap { top: 0.6rem; right: 0.6rem; }
+      .tog { width: 36px; height: 20px; }
+      .tog::after { width: 16px; height: 16px; }
+      [data-theme="light"] .tog::after { transform: translateX(16px); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="tog-wrap">
+  <span class="tog-label" id="togLabel">light</span>
+  <button class="tog" id="togBtn" aria-label="Toggle theme"></button>
+</div>
+
+<!-- LANDING -->
+<div class="screen" id="landing">
+  <div class="l-inner">
+    <div class="l-title">a quiet place</div>
+    <div class="l-body">I spend most of my days with fleeting
+thoughts. Writing. Reading. And sitting
+with silence long enough to hear
+what it has to say.
+
+The morning walks keep me on a hill
+of quiet. I go weeks without noise.
+
+This is a small corner of the internet
+where words are left to breathe.
+Poetry, prose, and the occasional thought
+written in the hours between the noise.
+
+There's beauty in keeping things.
+And always faith in the quiet.
+
+Thank you for finding this place.
+<span class="l-sign">-a quiet place</span></div>
+    <button class="l-btn" id="enterBtn">come in</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="screen screen--hidden" id="main">
+  <div class="site-mark">a quiet place</div>
+
+  <div class="draggable folder-item" data-click="birthday" style="top:18%;left:calc(50% - 140px);">
+    <img class="folder-icon" src="https://oklama.com/_next/static/media/gray.baac307f.png" alt="birthday wishes" draggable="false">
+    <div class="folder-label">birthday wishes</div>
+  </div>
+  <div class="draggable folder-item" data-click="writings" style="top:18%;left:calc(50% - 36px);">
+    <img class="folder-icon" src="https://oklama.com/_next/static/media/default.0302e2ab.png" alt="writings" draggable="false">
+    <div class="folder-label">writings</div>
+  </div>
+  <div class="draggable folder-item" data-click="moviemusic" style="top:18%;left:calc(50% + 68px);">
+    <img class="folder-icon" src="https://oklama.com/_next/static/media/black.2928ccde.png" alt="movie & music" draggable="false">
+    <div class="folder-label">movie & music</div>
+  </div>
+
+  <div class="draggable polaroid-wrap" style="top:44%;left:calc(50% - 125px);">
+    <div class="polaroid-frame">
+      <div class="polaroid-inner">
+        <div class="cs active"><img src="https://picsum.photos/seed/film-noir-29/500/667" alt="" loading="lazy"><div class="cs-overlay"><div class="cso-title">Paterson</div><div class="cso-sub">Jim Jarmusch · 2016</div><div class="cso-stars">★★★★½</div></div></div>
+        <div class="cs"><img src="https://picsum.photos/seed/nature-fog-48/500/667" alt="" loading="lazy"><div class="cs-overlay"><div class="cso-title">Holocene</div><div class="cso-sub">Bon Iver · 2011</div></div></div>
+        <div class="cs"><img src="https://picsum.photos/seed/warm-portrait-77/500/667" alt="" loading="lazy"><div class="cs-overlay"><div class="cso-title">Happy Birthday, Ma</div><div class="cso-sub">march 29, 2026</div></div></div>
+      </div>
+      <div class="polaroid-cap" id="capText">latest — movie/tv show highlight</div>
+    </div>
+    <div class="c-nav">
+      <button class="c-nav-btn" id="cPrevBtn">← prev</button>
+      <div class="c-dots"><div class="c-dot active"></div><div class="c-dot"></div><div class="c-dot"></div></div>
+      <button class="c-nav-btn" id="cNextBtn">next →</button>
+    </div>
+  </div>
+
+  <div class="site-footer">est. 2026</div>
+</div>
+
+<!-- WRITINGS -->
+<div id="ov-writings" class="ov w-ov">
+  <div class="w-bar"><button class="ov-btn" id="wCloseBtn">← close</button><span class="w-date" id="wDate">march 2026</span><span class="ov-btn" id="wCount" style="cursor:default">1 / 6</span></div>
+  <div class="w-nav"><button class="ov-btn" id="wPrev">← prev</button><button class="ov-btn" id="wNext">next →</button></div>
+  <div class="ws active" data-wd="march 2026"><div class="ws-inner"><div class="ws-type">poetry</div><div class="ws-body"><div class="stanza">I held the morning like a stone —
+smooth, cold, and borrowed from the river.
+There was nothing to say
+that the birds hadn't already said</div><div class="stanza">so I sat with my coffee
+and let the quiet do the talking,
+the way my grandmother used to,
+hands folded, eyes on something far.</div><div class="stanza">Still water doesn't mean
+nothing's moving underneath.
+It means the movement
+has learned patience.</div></div><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="march 27, 2026"><div class="ws-inner"><div class="ws-type">journal</div><div class="ws-body">Woke up before the alarm. The rain had
+that particular sound — the kind that
+makes you feel like staying is the
+bravest thing you can do. So I stayed.
+
+Made tea instead of coffee because it
+felt like a tea kind of morning.
+Sometimes the day tells you what it wants
+before you get a chance to decide.
+
+Read for an hour. Didn't finish the
+chapter. That's fine. The book will wait.
+Books are patient like that — infinitely
+more patient than people.
+
+Called home in the afternoon. Nobody
+answered. Left a voicemail that was
+mostly silence and then "I was just
+thinking about you." Hung up feeling
+like I'd said exactly enough.
+
+The evening came softly. Cooked something
+simple. Ate slowly. Watched the light
+leave the room without turning on a lamp.</div><img class="ws-img" src="https://picsum.photos/seed/rainy-window-12/480/320" alt="" loading="lazy"><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="march 2026"><div class="ws-inner"><div class="ws-type">prose</div><div class="ws-body">There's a bookshop on the corner of a
+street I can't remember the name of.
+It doesn't matter — the books remember me.
+That's the strange thing about places you
+love: they hold onto you even when you
+forget to hold onto them.
+
+The owner is an older man who wears the
+same cardigan regardless of the season.
+He doesn't greet you when you walk in.
+He just nods, the way someone acknowledges
+a returning bird. You were here. You left.
+You came back. That's the whole conversation.
+
+I go there when the world feels too loud.
+Not to read, exactly, but to be near
+reading. Near the possibility of someone
+else's words solving something I didn't
+know was broken.
+
+Last Tuesday I found a first edition of
+something I'd been looking for without
+knowing I was looking for it. That's how
+the best things find you. Not through
+searching. Through staying open long
+enough to be found.</div><img class="ws-img" src="https://picsum.photos/seed/old-bookshop-55/480/320" alt="" loading="lazy"><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="february 2026"><div class="ws-inner"><div class="ws-type">poetry</div><div class="ws-body"><div class="stanza">It doesn't arrive — it remembers.
+The way it finds the same corner
+of the table each afternoon,
+as if it left something there.</div><div class="stanza">I watch it move across the wall,
+slow as a sentence being written
+by someone who isn't sure
+how to end it yet.</div><div class="stanza">Maybe that's what the light does —
+it practices returning
+until the leaving
+doesn't hurt.</div></div><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="march 15, 2026"><div class="ws-inner"><div class="ws-type">journal</div><div class="ws-body">Nothing extraordinary happened today and
+that itself felt extraordinary. Made
+breakfast without checking my phone first.
+Eggs, toast, the last of the jam from
+that jar I bought at the market three
+weeks ago.
+
+Walked to the park. Sat on the bench
+that faces the wrong direction — the one
+that looks at the wall instead of the
+pond. I like that bench. It feels like
+it chose to be different, and nobody
+moved it.
+
+A stranger nodded at me. I nodded back.
+We shared something small and unnamed.
+That's community, isn't it? Not the grand
+gestures. Just the small acknowledgments
+that say: I see you. You're here.
+That's enough.
+
+Came home. Opened the window even though
+it was cold. Let the sound of the street
+in. Wrote these words. Felt like a good
+day. I think it was.</div><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="february 2026"><div class="ws-inner"><div class="ws-type">prose</div><div class="ws-body">I've been walking slower lately. Not
+because my legs are tired, but because
+I've been noticing things. A crack in
+the pavement that looks like a river
+delta. The way a shadow from a tree
+moves like a slow hand across the ground.
+
+Speed is a thief. I don't mean that in
+the motivational-poster way. I mean it
+literally steals moments from you —
+moments you paid for by being alive.
+
+I passed a window today and there was
+a woman inside arranging flowers. She
+didn't know I was watching. She held
+each stem like it was a small decision,
+turning it slowly before placing it down.
+She was building something beautiful,
+and she was doing it for no one.
+
+That's the thing about walking slowly.
+You start to see the people who are
+living on purpose. The ones who aren't
+rushing toward anything. They're just
+here — fully, quietly, completely here.</div><img class="ws-img" src="https://picsum.photos/seed/slow-walk-88/480/320" alt="" loading="lazy"><div class="ws-sign">-a quiet place</div></div></div>
+  <div class="ws" data-wd="january 2026"><div class="ws-inner"><div class="ws-type">poetry</div><div class="ws-body"><div class="stanza">I started writing to you in December.
+The ink froze before I could
+say what mattered — or maybe
+I froze. Hard to tell the difference.</div><div class="stanza">There are drafts of you
+in every notebook I own.
+Margins full of almost-words,
+sentences that lean toward your name
+and then pull back.</div><div class="stanza">One day I'll finish the letter.
+But not today. Today the page
+is patient, and so am I,
+and the unsaid is enough
+to keep us company.</div></div><div class="ws-sign">-a quiet place</div></div></div>
+</div>
+
+<!-- BIRTHDAY -->
+<div id="ov-birthday" class="ov b-ov">
+  <div class="b-bar"><button class="ov-btn" id="bCloseBtn">← close</button><span class="ov-btn" id="bCount" style="cursor:default">1 / 3</span></div>
+  <div class="bs active"><div class="b-polaroid"><img src="https://picsum.photos/seed/warm-portrait-77/400/533" alt="" loading="lazy"></div><div class="b-greeting">Happy Birthday</div><div class="b-name">Ma</div><div class="b-date-label">march 29, 2026</div></div>
+  <div class="bs"><div class="b-polaroid"><img src="https://picsum.photos/seed/friend-smile-22/400/533" alt="" loading="lazy"></div><div class="b-greeting">Happy Birthday</div><div class="b-name">Rej</div><div class="b-date-label">february 14, 2026</div></div>
+  <div class="bs"><div class="b-polaroid"><img src="https://picsum.photos/seed/brother-light-44/400/533" alt="" loading="lazy"></div><div class="b-greeting">Happy Birthday</div><div class="b-name">Kuya D</div><div class="b-date-label">january 8, 2026</div></div>
+  <div class="b-nav"><button class="ov-btn" id="bPrevBtn">← prev</button><button class="ov-btn" id="bNextBtn">next →</button></div>
+</div>
+
+<!-- MOVIE & MUSIC -->
+<div id="ov-moviemusic" class="ov mm-ov">
+  <div class="mm-bar"><button class="ov-btn" id="mmCloseBtn">← close</button><span class="ov-btn" style="cursor:default">movie & music</span></div>
+  <div class="mm-section">
+    <div class="mm-label">movie/tv show highlight</div>
+    <div id="mvShow">
+      <div class="mms active"><div class="mv-poster"><img src="https://picsum.photos/seed/film-noir-29/320/480" alt="" loading="lazy"></div><div class="mv-title">Paterson</div><div class="mv-meta">Jim Jarmusch · 2016 · 118 min</div><div class="mv-stars">★★★★½</div><div class="mv-note">A bus driver writes poetry in a notebook. That's the whole film. And it's everything.</div></div>
+      <div class="mms"><div class="mv-poster"><img src="https://picsum.photos/seed/romance-hk-60/320/480" alt="" loading="lazy"></div><div class="mv-title">In the Mood for Love</div><div class="mv-meta">Wong Kar-wai · 2000 · 98 min</div><div class="mv-stars">★★★★★</div><div class="mv-note">Two people fall in love but never say it. The whole movie lives in hallways and silences.</div></div>
+      <div class="mms"><div class="mv-poster"><img src="https://picsum.photos/seed/architecture-calm/320/480" alt="" loading="lazy"></div><div class="mv-title">Columbus</div><div class="mv-meta">Kogonada · 2017 · 104 min</div><div class="mv-stars">★★★★</div><div class="mv-note">Architecture as therapy. Two strangers talk about buildings and end up talking about everything.</div></div>
+    </div>
+    <div class="mm-nav"><button class="mm-nav-btn" id="mvPrev">←</button><span class="mm-counter" id="mvShow-c">1 / 3</span><button class="mm-nav-btn" id="mvNext">→</button></div>
+    <div class="mm-divider"></div>
+    <div class="mm-label">on repeat</div>
+    <div id="muShow">
+      <div class="mms active"><div class="mu-art"><img src="https://picsum.photos/seed/nature-fog-48/320/320" alt="" loading="lazy"></div><div class="mu-title">Holocene</div><div class="mu-artist">Bon Iver · 2011</div><div class="mu-note">There's a line in this song that makes me feel like I'm standing in a field at the end of the world, and it's okay.</div></div>
+      <div class="mms"><div class="mu-art"><img src="https://picsum.photos/seed/summer-italy-33/320/320" alt="" loading="lazy"></div><div class="mu-title">Mystery of Love</div><div class="mu-artist">Sufjan Stevens · 2017</div><div class="mu-note">Every time I hear this I'm somewhere in Italy I've never been to.</div></div>
+      <div class="mms"><div class="mu-art"><img src="https://picsum.photos/seed/moody-sky-71/320/320" alt="" loading="lazy"></div><div class="mu-title">Motion Sickness</div><div class="mu-artist">Phoebe Bridgers · 2017</div><div class="mu-note">Angry and sad at the same time. Like laughing while crying.</div></div>
+    </div>
+    <div class="mm-nav" style="padding-bottom:3rem;"><button class="mm-nav-btn" id="muPrev">←</button><span class="mm-counter" id="muShow-c">1 / 3</span><button class="mm-nav-btn" id="muNext">→</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var ready=false;
+
+  document.getElementById('togBtn').addEventListener('click',function(){
+    var h=document.documentElement,l=document.getElementById('togLabel');
+    if(h.getAttribute('data-theme')==='dark'){h.setAttribute('data-theme','light');l.textContent='dark';}
+    else{h.setAttribute('data-theme','dark');l.textContent='light';}
+  });
+
+  document.getElementById('enterBtn').addEventListener('click',function(){
+    document.getElementById('landing').classList.add('screen--hidden');
+    document.getElementById('main').classList.remove('screen--hidden');
+    document.getElementById('main').classList.add('animate');
+    setTimeout(function(){ready=true;},700);
+  });
+
+  function openOv(id){if(!ready)return;document.getElementById('ov-'+id).classList.add('open');}
+  function closeOv(id){document.getElementById('ov-'+id).classList.remove('open');}
+
+  var dragEl=null,offX=0,offY=0,sX=0,sY=0,moved=false;
+  function xy(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
+  function down(e){if(!ready)return;dragEl=e.currentTarget;var r=dragEl.getBoundingClientRect(),p=xy(e);offX=p.x-r.left;offY=p.y-r.top;sX=p.x;sY=p.y;moved=false;dragEl.classList.add('dragging');e.preventDefault();}
+  function move(e){if(!dragEl)return;var p=xy(e);if(Math.abs(p.x-sX)>5||Math.abs(p.y-sY)>5)moved=true;dragEl.style.left=(p.x-offX)+'px';dragEl.style.top=(p.y-offY)+'px';e.preventDefault();}
+  function up(){if(!dragEl)return;dragEl.classList.remove('dragging');if(!moved&&ready){var t=dragEl.dataset.click;if(t)openOv(t);}dragEl=null;}
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+  document.addEventListener('touchmove',move,{passive:false});
+  document.addEventListener('touchend',up);
+  document.querySelectorAll('.draggable').forEach(function(el){el.addEventListener('mousedown',down);el.addEventListener('touchstart',down,{passive:false});});
+
+  var ci=0,csl=document.querySelectorAll('.cs'),cdo=document.querySelectorAll('.c-dot');
+  var caps=['latest — movie/tv show highlight','latest — on repeat','latest — birthday'];
+  function cUpd(){csl.forEach(function(s){s.classList.remove('active');});cdo.forEach(function(d){d.classList.remove('active');});csl[ci].classList.add('active');cdo[ci].classList.add('active');document.getElementById('capText').textContent=caps[ci];}
+  document.getElementById('cNextBtn').addEventListener('click',function(e){e.stopPropagation();ci=(ci+1)%csl.length;cUpd();});
+  document.getElementById('cPrevBtn').addEventListener('click',function(e){e.stopPropagation();ci=(ci-1+csl.length)%csl.length;cUpd();});
+
+  var wsl=document.querySelectorAll('.ws'),wi=0;
+  function wUpd(){wsl.forEach(function(s){s.classList.remove('active');});wsl[wi].classList.add('active');document.getElementById('wDate').textContent=wsl[wi].dataset.wd;document.getElementById('wCount').textContent=(wi+1)+' / '+wsl.length;}
+  document.getElementById('wCloseBtn').addEventListener('click',function(){closeOv('writings');wi=0;wUpd();});
+  document.getElementById('wNext').addEventListener('click',function(){wi=(wi+1)%wsl.length;wUpd();});
+  document.getElementById('wPrev').addEventListener('click',function(){wi=(wi-1+wsl.length)%wsl.length;wUpd();});
+
+  var bsl=document.querySelectorAll('.bs'),bi=0;
+  function bUpd(){bsl.forEach(function(s){s.classList.remove('active');});bsl[bi].classList.add('active');document.getElementById('bCount').textContent=(bi+1)+' / '+bsl.length;}
+  document.getElementById('bCloseBtn').addEventListener('click',function(){closeOv('birthday');});
+  document.getElementById('bPrevBtn').addEventListener('click',function(){bi=(bi-1+bsl.length)%bsl.length;bUpd();});
+  document.getElementById('bNextBtn').addEventListener('click',function(){bi=(bi+1)%bsl.length;bUpd();});
+
+  function mmSlide(id,d){var el=document.getElementById(id),sl=el.querySelectorAll('.mms'),cur=0;sl.forEach(function(s,i){if(s.classList.contains('active'))cur=i;});sl[cur].classList.remove('active');var n=(cur+d+sl.length)%sl.length;sl[n].classList.add('active');document.getElementById(id+'-c').textContent=(n+1)+' / '+sl.length;}
+  document.getElementById('mmCloseBtn').addEventListener('click',function(){closeOv('moviemusic');});
+  document.getElementById('mvPrev').addEventListener('click',function(){mmSlide('mvShow',-1);});
+  document.getElementById('mvNext').addEventListener('click',function(){mmSlide('mvShow',1);});
+  document.getElementById('muPrev').addEventListener('click',function(){mmSlide('muShow',-1);});
+  document.getElementById('muNext').addEventListener('click',function(){mmSlide('muShow',1);});
+
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.ov.open').forEach(function(f){f.classList.remove('open');});});
+})();
+</script>
+</body>
+</html>
