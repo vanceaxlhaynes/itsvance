@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>a quiet place</title>
+  <title>Of Silence and Sound</title>
   <!-- Consolas is a system font, no external load needed -->
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,6 +54,7 @@
 
     ::selection { background: var(--accent); color: var(--bg); }
     img { display: block; }
+    button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
     /* ===== iOS TOGGLE ===== */
     .tog-wrap {
@@ -101,6 +102,10 @@
       width: auto; height: auto;
       object-fit: cover; z-index: 0;
     }
+    .l-video::-webkit-media-controls { display: none !important; }
+    .l-video::-webkit-media-controls-start-playback-button { display: none !important; }
+    .l-video::-webkit-media-controls-panel { display: none !important; }
+    .l-video::-moz-media-controls { display: none !important; }
     [data-theme="dark"] .l-video { opacity: 0.35; }
     [data-theme="light"] .l-video { opacity: 0.4; mix-blend-mode: multiply; }
     .l-overlay {
@@ -340,7 +345,7 @@
   </video>
   <div class="l-overlay"></div>
   <div class="l-inner">
-    <div class="l-title">a quiet place</div>
+    <div class="l-title">Of Silence and Sound</div>
     <div class="l-body">I spend most of my days with fleeting
 thoughts. Writing. Reading. And sitting
 with silence long enough to hear
@@ -358,7 +363,7 @@ There's beauty in keeping things.
 And always faith in the quiet.
 
 Thank you for finding this place.
-<span class="l-sign">-a quiet place</span></div>
+<span class="l-sign">- Vance</span></div>
     <button class="l-btn" id="enterBtn">come in</button>
   </div>
 </div>
@@ -368,7 +373,7 @@ Thank you for finding this place.
 
 <!-- MAIN -->
 <div class="screen screen--hidden" id="main">
-  <div class="site-mark">a quiet place</div>
+  <div class="site-mark">Of Silence and Sound</div>
 
   <div class="draggable folder-item" data-click="birthday" style="top:18%;left:calc(50% - 140px);">
     <img class="folder-icon" src="https://oklama.com/_next/static/media/gray.baac307f.png" alt="birthday wishes" draggable="false">
@@ -501,7 +506,7 @@ Thank you for finding this place.
   /* ===== DRAG ===== */
   var dragEl=null, offX=0, offY=0, sX=0, sY=0, moved=false;
   function xy(e) { return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
-  function down(e) { if(!ready) return; dragEl=e.currentTarget; var r=dragEl.getBoundingClientRect(), p=xy(e); offX=p.x-r.left; offY=p.y-r.top; sX=p.x; sY=p.y; moved=false; dragEl.classList.add('dragging'); e.preventDefault(); }
+  function down(e) { if(!ready) return; var tag=e.target.tagName.toLowerCase(); if(tag==='button'||e.target.closest('button')) return; dragEl=e.currentTarget; var r=dragEl.getBoundingClientRect(), p=xy(e); offX=p.x-r.left; offY=p.y-r.top; sX=p.x; sY=p.y; moved=false; dragEl.classList.add('dragging'); e.preventDefault(); }
   function move(e) { if(!dragEl) return; var p=xy(e); if(Math.abs(p.x-sX)>5||Math.abs(p.y-sY)>5) moved=true; dragEl.style.left=(p.x-offX)+'px'; dragEl.style.top=(p.y-offY)+'px'; e.preventDefault(); }
   function up() { if(!dragEl) return; dragEl.classList.remove('dragging'); if(!moved&&ready){ var t=dragEl.dataset.click; if(t) openOv(t); } dragEl=null; }
   document.addEventListener('mousemove', move);
@@ -640,7 +645,7 @@ Thank you for finding this place.
 
       var imgHtml = w.imageUrl ? '<img class="ws-img" src="' + esc(w.imageUrl) + '" alt="" loading="lazy">' : '';
 
-      html += '<div class="ws' + (i === 0 ? ' active' : '') + '" data-wd="' + esc(w.dateLabel) + '"><div class="ws-inner"><div class="ws-type">' + esc(w.type) + '</div><div class="ws-body">' + bodyHtml + '</div>' + imgHtml + '<div class="ws-sign">-a quiet place</div></div></div>';
+      html += '<div class="ws' + (i === 0 ? ' active' : '') + '" data-wd="' + esc(w.dateLabel) + '"><div class="ws-inner"><div class="ws-type">' + esc(w.type) + '</div><div class="ws-body">' + bodyHtml + '</div>' + imgHtml + '<div class="ws-sign">- Vance</div></div></div>';
     });
 
     container.innerHTML = html;
