@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>notify — vance being vance</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      background: #1e1e1e; color: #e2ded6;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .container { max-width: 440px; width: 100%; }
+    h1 { font-size: 0.85rem; font-weight: normal; margin-bottom: 2rem; text-align: center; color: #9a958e; }
+
+    /* PASSWORD GATE */
+    .gate { text-align: center; }
+    .gate input {
+      background: transparent; border: 1px solid #444;
+      font-family: inherit; font-size: 0.75rem; color: #e2ded6;
+      padding: 10px 16px; width: 200px; text-align: center; outline: none;
+    }
+    .gate input::placeholder { color: #5a5755; }
+    .gate input:focus { border-color: #9a958e; }
+    .gate-err { font-size: 0.6rem; color: #9a958e; margin-top: 0.8rem; }
+
+    /* COMPOSE UI */
+    .compose { display: none; }
+    .compose.show { display: block; }
+
+    label {
+      display: block; font-size: 0.55rem; color: #7a7775;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 0.4rem; margin-top: 1.2rem;
+    }
+    label:first-of-type { margin-top: 0; }
+
+    .field {
+      background: transparent; border: 1px solid #444;
+      font-family: inherit; font-size: 0.72rem; color: #e2ded6;
+      padding: 10px 14px; width: 100%; outline: none;
+      transition: border-color 0.3s;
+    }
+    .field:focus { border-color: #9a958e; }
+    .field::placeholder { color: #5a5755; }
+    textarea.field { min-height: 120px; resize: vertical; line-height: 1.8; }
+
+    .category-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.3rem;
+    }
+    .cat-btn {
+      background: transparent; border: 1px solid #444;
+      font-family: inherit; font-size: 0.55rem; color: #7a7775;
+      padding: 6px 14px; cursor: pointer; transition: all 0.3s;
+      text-transform: lowercase;
+    }
+    .cat-btn:hover { border-color: #9a958e; color: #e2ded6; }
+    .cat-btn.active { border-color: #d4c87a; color: #d4c87a; }
+
+    .send-btn {
+      background: none; border: 1px solid #d4c87a;
+      font-family: inherit; font-size: 0.65rem; color: #d4c87a;
+      padding: 12px 24px; cursor: pointer; width: 100%;
+      transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.08em;
+      margin-top: 1.8rem;
+    }
+    .send-btn:hover { background: #d4c87a; color: #1e1e1e; }
+    .send-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .preview-toggle {
+      background: none; border: none;
+      font-family: inherit; font-size: 0.55rem; color: #7a7775;
+      cursor: pointer; margin-top: 1rem; text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .preview-toggle:hover { color: #e2ded6; }
+
+    .preview-box {
+      display: none; margin-top: 1rem;
+      border: 1px solid #333; padding: 1.2rem;
+      background: #252525;
+    }
+    .preview-box.show { display: block; }
+    .preview-cat { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 3px; color: #9a958e; margin-bottom: 0.8rem; }
+    .preview-subj { font-size: 0.85rem; color: #e2ded6; margin-bottom: 0.8rem; line-height: 1.6; }
+    .preview-msg { font-size: 0.7rem; color: #e2ded6; line-height: 2; white-space: pre-line; }
+    .preview-cta { display: inline-block; border: 1px solid #d4c87a; color: #d4c87a; padding: 8px 20px; font-size: 0.55rem; margin-top: 1rem; letter-spacing: 1px; }
+
+    .status {
+      margin-top: 1.2rem; font-size: 0.65rem; text-align: center;
+      line-height: 1.8; padding: 1rem;
+    }
+    .status.success { color: #d4c87a; border: 1px solid #333; }
+    .status.error { color: #c87a7a; border: 1px solid #333; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 2rem;
+      font-size: 0.55rem; color: #5a5755; text-decoration: none;
+    }
+    .back-link:hover { color: #9a958e; }
+
+    .divider { width: 40px; height: 1px; background: #333; margin: 1.5rem auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>notify subscribers</h1>
+
+    <!-- PASSWORD GATE -->
+    <div class="gate" id="gate">
+      <input type="password" id="passInput" placeholder="password" autofocus>
+      <div class="gate-err" id="gateErr"></div>
+    </div>
+
+    <!-- COMPOSE -->
+    <div class="compose" id="compose">
+
+      <label>category</label>
+      <div class="category-row">
+        <button class="cat-btn" data-cat="new writing">new writing</button>
+        <button class="cat-btn" data-cat="movie/tv highlight">movie/tv highlight</button>
+        <button class="cat-btn" data-cat="on repeat">on repeat</button>
+        <button class="cat-btn" data-cat="birthday greeting">birthday greeting</button>
+        <button class="cat-btn" data-cat="new photos">new photos</button>
+        <button class="cat-btn" data-cat="announcement">announcement</button>
+      </div>
+
+      <label>subject</label>
+      <input type="text" class="field" id="subjectInput" placeholder="something new on vance being vance">
+
+      <label>message (optional)</label>
+      <textarea class="field" id="messageInput" placeholder="write something personal to your subscribers..."></textarea>
+
+      <button class="preview-toggle" id="previewToggle">preview email ↓</button>
+      <div class="preview-box" id="previewBox">
+        <div class="preview-cat" id="prevCat"></div>
+        <div class="preview-subj" id="prevSubj">something new on vance being vance</div>
+        <div class="divider"></div>
+        <div class="preview-msg" id="prevMsg"></div>
+        <div class="preview-cta">visit the site</div>
+      </div>
+
+      <button class="send-btn" id="sendBtn">send to all subscribers</button>
+      <div class="status" id="status" style="display:none;"></div>
+    </div>
+
+    <a href="/" class="back-link">← back to site</a>
+  </div>
+
+<script>
+(function() {
+  var selectedCat = '';
+
+  // Password gate
+  var passInput = document.getElementById('passInput');
+  passInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var pw = passInput.value.trim();
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'auth', password: pw })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.ok) {
+          sessionStorage.setItem('notify_pw', pw);
+          document.getElementById('gate').style.display = 'none';
+          document.getElementById('compose').classList.add('show');
+        } else {
+          document.getElementById('gateErr').textContent = 'wrong password';
+        }
+      });
+    }
+  });
+
+  // Auto-login
+  var savedPw = sessionStorage.getItem('notify_pw');
+  if (savedPw) {
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'auth', password: savedPw })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('compose').classList.add('show');
+      }
+    });
+  }
+
+  // Category buttons
+  document.querySelectorAll('.cat-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (selectedCat === btn.dataset.cat) {
+        selectedCat = '';
+      } else {
+        btn.classList.add('active');
+        selectedCat = btn.dataset.cat;
+      }
+      updatePreview();
+    });
+  });
+
+  // Preview
+  var subjectInput = document.getElementById('subjectInput');
+  var messageInput = document.getElementById('messageInput');
+
+  subjectInput.addEventListener('input', updatePreview);
+  messageInput.addEventListener('input', updatePreview);
+
+  function updatePreview() {
+    document.getElementById('prevCat').textContent = selectedCat;
+    document.getElementById('prevSubj').textContent = subjectInput.value || 'something new on vance being vance';
+    document.getElementById('prevMsg').textContent = messageInput.value || '';
+  }
+
+  document.getElementById('previewToggle').addEventListener('click', function() {
+    var box = document.getElementById('previewBox');
+    box.classList.toggle('show');
+    this.textContent = box.classList.contains('show') ? 'hide preview ↑' : 'preview email ↓';
+    updatePreview();
+  });
+
+  // Send
+  document.getElementById('sendBtn').addEventListener('click', function() {
+    var btn = this;
+    var status = document.getElementById('status');
+    var subject = subjectInput.value.trim() || 'something new on vance being vance';
+    var message = messageInput.value.trim();
+    var pw = sessionStorage.getItem('notify_pw') || '';
+
+    if (!confirm('send this notification to all active subscribers?')) return;
+
+    btn.disabled = true;
+    btn.textContent = 'sending...';
+    status.style.display = 'none';
+
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'send',
+        password: pw,
+        subject: subject,
+        message: message,
+        category: selectedCat
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      status.style.display = 'block';
+      if (data.success) {
+        status.className = 'status success';
+        var msg = 'sent to ' + data.sent + ' subscriber' + (data.sent !== 1 ? 's' : '') + '.';
+        if (data.failed > 0) msg += ' ' + data.failed + ' failed.';
+        status.textContent = msg;
+      } else {
+        status.className = 'status error';
+        status.textContent = data.error || 'something went wrong';
+      }
+      btn.textContent = 'send to all subscribers';
+      btn.disabled = false;
+    })
+    .catch(function() {
+      status.style.display = 'block';
+      status.className = 'status error';
+      status.textContent = 'something went wrong';
+      btn.textContent = 'send to all subscribers';
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
