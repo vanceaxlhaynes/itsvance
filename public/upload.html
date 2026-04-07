@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>upload — vance being vance</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Consolas, 'Courier New', Courier, monospace;
+      background: #1e1e1e; color: #e2ded6;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .container { max-width: 400px; width: 100%; }
+    h1 { font-size: 0.85rem; font-weight: normal; margin-bottom: 2rem; text-align: center; color: #9a958e; }
+
+    /* PASSWORD GATE */
+    .gate { text-align: center; }
+    .gate input {
+      background: transparent; border: 1px solid #444;
+      font-family: inherit; font-size: 0.75rem; color: #e2ded6;
+      padding: 10px 16px; width: 200px; text-align: center; outline: none;
+    }
+    .gate input::placeholder { color: #5a5755; }
+    .gate input:focus { border-color: #9a958e; }
+    .gate-err { font-size: 0.6rem; color: #9a958e; margin-top: 0.8rem; }
+
+    /* UPLOAD UI */
+    .upload-ui { display: none; }
+    .upload-ui.show { display: block; }
+
+    .drop-zone {
+      border: 2px dashed #444; padding: 3rem 1.5rem;
+      text-align: center; cursor: pointer;
+      transition: border-color 0.3s; margin-bottom: 1.5rem;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #d4c87a; }
+    .drop-zone p { font-size: 0.7rem; color: #9a958e; line-height: 1.8; }
+    .drop-zone input { display: none; }
+
+    .caption-input {
+      background: transparent; border: 1px solid #444;
+      font-family: inherit; font-size: 0.7rem; color: #e2ded6;
+      padding: 8px 12px; width: 100%; outline: none; margin-bottom: 1rem;
+    }
+    .caption-input::placeholder { color: #5a5755; }
+
+    /* PREVIEW */
+    .previews { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+    .preview-item {
+      position: relative; width: 80px; height: 80px;
+      border: 1px solid #444; overflow: hidden;
+    }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-remove {
+      position: absolute; top: 2px; right: 2px;
+      background: rgba(0,0,0,0.7); border: none; color: #e2ded6;
+      font-size: 0.7rem; width: 18px; height: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .upload-btn {
+      background: none; border: 1px solid #d4c87a;
+      font-family: inherit; font-size: 0.65rem; color: #d4c87a;
+      padding: 10px 24px; cursor: pointer; width: 100%;
+      transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .upload-btn:hover { background: #d4c87a; color: #1e1e1e; }
+    .upload-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* STATUS */
+    .status { margin-top: 1rem; font-size: 0.6rem; color: #9a958e; text-align: center; line-height: 1.8; }
+    .status.success { color: #d4c87a; }
+    .status.error { color: #c87a7a; }
+
+    .progress-bar {
+      width: 100%; height: 3px; background: #333; margin-top: 0.8rem; border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 0%; background: #d4c87a; transition: width 0.3s;
+    }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 2rem;
+      font-size: 0.55rem; color: #5a5755; text-decoration: none;
+    }
+    .back-link:hover { color: #9a958e; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>upload — life thru lenses</h1>
+
+    <!-- PASSWORD GATE -->
+    <div class="gate" id="gate">
+      <input type="password" id="passInput" placeholder="password" autofocus>
+      <div class="gate-err" id="gateErr"></div>
+    </div>
+
+    <!-- UPLOAD UI -->
+    <div class="upload-ui" id="uploadUI">
+      <div class="drop-zone" id="dropZone">
+        <p>tap to pick photos<br>or drag them here</p>
+        <input type="file" id="fileInput" multiple accept="image/*">
+      </div>
+
+      <div class="previews" id="previews"></div>
+
+      <input type="text" class="caption-input" id="captionInput" placeholder="caption (optional)">
+
+      <button class="upload-btn" id="uploadBtn" disabled>upload photos</button>
+
+      <div class="progress-bar" id="progressBar" style="display:none;">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <a href="/" class="back-link">← back to site</a>
+  </div>
+
+<script>
+(function() {
+  var CLOUD_NAME = 'dsa8d2wwd';
+  var PRESET = 'vbv_photos';
+  var files = [];
+
+  // Password gate
+  var passInput = document.getElementById('passInput');
+  passInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var pw = passInput.value.trim();
+      fetch('/api/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'auth', password: pw })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.ok) {
+          sessionStorage.setItem('upload_pw', pw);
+          document.getElementById('gate').style.display = 'none';
+          document.getElementById('uploadUI').classList.add('show');
+        } else {
+          document.getElementById('gateErr').textContent = 'wrong password';
+        }
+      });
+    }
+  });
+
+  // Check if already authed
+  var savedPw = sessionStorage.getItem('upload_pw');
+  if (savedPw) {
+    fetch('/api/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'auth', password: savedPw })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('uploadUI').classList.add('show');
+      }
+    });
+  }
+
+  // File picking
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    addFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', function() { addFiles(fileInput.files); });
+
+  function addFiles(newFiles) {
+    for (var i = 0; i < newFiles.length; i++) {
+      if (newFiles[i].type.startsWith('image/')) files.push(newFiles[i]);
+    }
+    renderPreviews();
+  }
+
+  function renderPreviews() {
+    var container = document.getElementById('previews');
+    container.innerHTML = '';
+    files.forEach(function(f, idx) {
+      var div = document.createElement('div');
+      div.className = 'preview-item';
+      var img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      var btn = document.createElement('button');
+      btn.className = 'preview-remove';
+      btn.textContent = '×';
+      btn.addEventListener('click', function() { files.splice(idx, 1); renderPreviews(); });
+      div.appendChild(img);
+      div.appendChild(btn);
+      container.appendChild(div);
+    });
+    document.getElementById('uploadBtn').disabled = files.length === 0;
+  }
+
+  // Upload
+  document.getElementById('uploadBtn').addEventListener('click', function() {
+    if (!files.length) return;
+    var btn = document.getElementById('uploadBtn');
+    var status = document.getElementById('status');
+    var progressBar = document.getElementById('progressBar');
+    var progressFill = document.getElementById('progressFill');
+    var caption = document.getElementById('captionInput').value.trim();
+    var pw = sessionStorage.getItem('upload_pw') || '';
+
+    btn.disabled = true;
+    btn.textContent = 'uploading...';
+    status.textContent = '';
+    status.className = 'status';
+    progressBar.style.display = 'block';
+    progressFill.style.width = '0%';
+
+    var total = files.length;
+    var done = 0;
+    var failed = 0;
+
+    function uploadNext(idx) {
+      if (idx >= total) {
+        progressFill.style.width = '100%';
+        btn.textContent = 'upload photos';
+        if (failed === 0) {
+          status.textContent = done + ' photo' + (done > 1 ? 's' : '') + ' uploaded successfully.';
+          status.className = 'status success';
+          files = [];
+          renderPreviews();
+          document.getElementById('captionInput').value = '';
+        } else {
+          status.textContent = done + ' uploaded, ' + failed + ' failed.';
+          status.className = 'status error';
+        }
+        btn.disabled = files.length === 0;
+        return;
+      }
+
+      status.textContent = 'uploading ' + (idx + 1) + ' of ' + total + '...';
+
+      // Upload to Cloudinary
+      var formData = new FormData();
+      formData.append('file', files[idx]);
+      formData.append('upload_preset', PRESET);
+
+      fetch('https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.secure_url) {
+          // Create Notion entry
+          return fetch('/api/upload-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'create',
+              password: pw,
+              photoUrl: data.secure_url,
+              title: caption || 'untitled',
+              caption: caption
+            })
+          });
+        } else {
+          throw new Error('Cloudinary upload failed');
+        }
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) { done++; } else { failed++; }
+      })
+      .catch(function() { failed++; })
+      .finally(function() {
+        progressFill.style.width = ((idx + 1) / total * 100) + '%';
+        uploadNext(idx + 1);
+      });
+    }
+
+    uploadNext(0);
+  });
+})();
+</script>
+</body>
+</html>
